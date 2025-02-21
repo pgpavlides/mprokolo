@@ -10,23 +10,27 @@ export async function GET(request) {
   
     try {
       // First get all repos to find the one with matching ID
-      const reposResponse = await fetch('https://api.github.com/user/repos', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Accept': 'application/vnd.github.v3+json',
-        },
-      });
+      const reposResponse = await fetch(
+        `https://api.github.com/repositories/${repoId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/vnd.github.v3+json',
+          },
+        }
+      );
   
       if (!reposResponse.ok) {
-        throw new Error('Failed to fetch repositories');
+        const errorData = await reposResponse.text();
+        console.error('GitHub API Error:', {
+          status: reposResponse.status,
+          statusText: reposResponse.statusText,
+          error: errorData
+        });
+        throw new Error(`Failed to fetch repository: ${reposResponse.status} ${reposResponse.statusText}`);
       }
   
-      const repos = await reposResponse.json();
-      const repo = repos.find(r => r.id.toString() === repoId);
-  
-      if (!repo) {
-        return new Response('Repository not found', { status: 404 });
-      }
+      const repo = await reposResponse.json();
   
       return new Response(JSON.stringify(repo), {
         status: 200,
@@ -35,7 +39,11 @@ export async function GET(request) {
         },
       });
     } catch (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      console.error('Repo fetch error:', error);
+      return new Response(JSON.stringify({ 
+        error: error.message,
+        details: error.stack
+      }), {
         status: 500,
         headers: {
           'Content-Type': 'application/json',

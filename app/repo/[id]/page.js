@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { use } from 'react';
+import { useState, useEffect } from "react";
+import { use } from "react";
 import {
   FileDown,
   Copy,
@@ -19,12 +19,12 @@ import {
   Settings,
   Share2,
   ArrowLeft,
-} from 'lucide-react';
-import Link from 'next/link';
-import { generateTreeText } from '../utils/treeUtils';
-import { generateMarkdown } from '../utils/createMdUtils';
-import ExportModal from '../components/ExportModal';
-import LoadingProgress from '../components/LoadingProgress';
+} from "lucide-react";
+import Link from "next/link";
+import { generateTreeText } from "../utils/treeUtils";
+import { generateMarkdown } from "../utils/createMdUtils";
+import ExportModal from "../components/ExportModal";
+import LoadingProgress from "../components/LoadingProgress";
 
 export default function RepoDetail({ params }) {
   const { id } = use(params);
@@ -32,14 +32,14 @@ export default function RepoDetail({ params }) {
   const [treeData, setTreeData] = useState([]);
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [loading, setLoading] = useState(true);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [progressState, setProgressState] = useState({
     isGenerating: false,
     current: 0,
     total: 0,
-    currentFile: '',
-    isComplete: false
+    currentFile: "",
+    isComplete: false,
   });
 
   const languageColors = {
@@ -62,17 +62,38 @@ export default function RepoDetail({ params }) {
 
   const fetchRepoDetails = async () => {
     try {
+      setLoading(true);
+
+      // Fetch repository details
       const repoResponse = await fetch(`/api/repo?id=${id}`);
-      if (!repoResponse.ok) throw new Error("Failed to fetch repository");
+      if (!repoResponse.ok) {
+        const errorData = await repoResponse.json();
+        throw new Error(
+          `Failed to fetch repository: ${
+            errorData.error || repoResponse.statusText
+          }`
+        );
+      }
       const repoData = await repoResponse.json();
       setRepo(repoData);
 
-      const treeResponse = await fetch(`/api/repo/tree?repo=${repoData.full_name}`);
-      if (!treeResponse.ok) throw new Error("Failed to fetch repository tree");
+      // Fetch repository tree
+      const treeResponse = await fetch(
+        `/api/repo/tree?repo=${repoData.full_name}`
+      );
+      if (!treeResponse.ok) {
+        const errorData = await treeResponse.json();
+        throw new Error(
+          `Failed to fetch repository tree: ${
+            errorData.error || treeResponse.statusText
+          }`
+        );
+      }
       const { tree } = await treeResponse.json();
       setTreeData(tree || []);
     } catch (error) {
       console.error("Error fetching repo details:", error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -80,19 +101,19 @@ export default function RepoDetail({ params }) {
 
   const showToast = (message) => {
     setToastMessage(message);
-    setTimeout(() => setToastMessage(''), 2000);
+    setTimeout(() => setToastMessage(""), 2000);
   };
 
   const getFolders = () => {
     return treeData
-      .filter(item => item.type === "tree")
-      .map(item => item.path);
+      .filter((item) => item.type === "tree")
+      .map((item) => item.path);
   };
 
   const handleCopyTree = () => {
     const treeText = generateTreeText(treeData);
     navigator.clipboard.writeText(treeText);
-    showToast('Tree structure copied to clipboard!');
+    showToast("Tree structure copied to clipboard!");
   };
 
   const handleCreateMd = () => {
@@ -105,14 +126,14 @@ export default function RepoDetail({ params }) {
       isGenerating: true,
       current: 0,
       total: 0,
-      currentFile: 'Preparing...',
-      isComplete: false
+      currentFile: "Preparing...",
+      isComplete: false,
     });
 
     try {
       const markdown = await generateMarkdown(
-        treeData, 
-        options, 
+        treeData,
+        options,
         repo.full_name,
         (progress) => {
           setProgressState({
@@ -120,18 +141,18 @@ export default function RepoDetail({ params }) {
             current: progress.current,
             total: progress.total,
             currentFile: progress.fileName,
-            isComplete: progress.isComplete
+            isComplete: progress.isComplete,
           });
         }
       );
 
       // Copy to clipboard
       await navigator.clipboard.writeText(markdown);
-      
+
       // Create and download the file
-      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const blob = new Blob([markdown], { type: "text/markdown" });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
+      const a = document.createElement("a");
       a.href = url;
       a.download = `${repo.name}-documentation.md`;
       document.body.appendChild(a);
@@ -141,14 +162,13 @@ export default function RepoDetail({ params }) {
 
       // Show success toast after a brief delay to show completion
       setTimeout(() => {
-        showToast('Documentation generated and downloaded!');
-        setProgressState(prev => ({ ...prev, isGenerating: false }));
+        showToast("Documentation generated and downloaded!");
+        setProgressState((prev) => ({ ...prev, isGenerating: false }));
       }, 1000);
-
     } catch (error) {
-      console.error('Error generating markdown:', error);
-      showToast('Error generating documentation');
-      setProgressState(prev => ({ ...prev, isGenerating: false }));
+      console.error("Error generating markdown:", error);
+      showToast("Error generating documentation");
+      setProgressState((prev) => ({ ...prev, isGenerating: false }));
     }
   };
 
@@ -263,7 +283,7 @@ export default function RepoDetail({ params }) {
           isComplete={progressState.isComplete}
         />
       )}
-      
+
       <div className="h-16 border-b border-green-800 px-4 flex items-center">
         <Link
           href="/"
