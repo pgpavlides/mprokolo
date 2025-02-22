@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import MatrixRain from '@/components/MatrixRain';
-import CategoriesManagement from '@/components/CategoriesManagement';
+import CategoriesManagement from './components/categories-management';
 import TopBar from './components/TopBar';
 import LinkGrid from './components/LinkGrid';
 import Pagination from './components/Pagination';
@@ -19,6 +19,8 @@ export default function LibraryPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [editMode, setEditMode] = useState(false);
+  const [selectedLinks, setSelectedLinks] = useState(new Set());
   
   // Modal states
   const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
@@ -32,6 +34,13 @@ export default function LibraryPage() {
     if (savedLinks) setLinks(JSON.parse(savedLinks));
     if (savedCategories) setCategories(JSON.parse(savedCategories));
   }, []);
+
+  // Reset selected links when exiting edit mode
+  useEffect(() => {
+    if (!editMode) {
+      setSelectedLinks(new Set());
+    }
+  }, [editMode]);
 
   // Filter links based on search and category
   const filteredLinks = useMemo(() => {
@@ -68,9 +77,7 @@ export default function LibraryPage() {
     setIsAddLinkModalOpen(false);
   };
 
-  // Update categories while maintaining the data structure
   const handleCategoriesUpdate = (updatedCategories) => {
-    // Ensure each category has the correct structure
     const formattedCategories = updatedCategories.map(cat => ({
       id: cat.id || `cat-${cat.name}`,
       name: cat.name,
@@ -80,6 +87,39 @@ export default function LibraryPage() {
     setCategories(formattedCategories);
     localStorage.setItem("mprokolo-library-categories", JSON.stringify(formattedCategories));
     setIsCategoriesModalOpen(false);
+  };
+
+  const toggleLinkSelection = (linkId) => {
+    if (!editMode) return;
+    
+    setSelectedLinks(prev => {
+      const next = new Set(prev);
+      if (next.has(linkId)) {
+        next.delete(linkId);
+      } else {
+        next.add(linkId);
+      }
+      return next;
+    });
+  };
+
+  const handleDeleteSelected = () => {
+    if (selectedLinks.size === 0) return;
+    
+    if (confirm(`Are you sure you want to delete ${selectedLinks.size} selected link(s)?`)) {
+      const updatedLinks = links.filter(link => !selectedLinks.has(link.id));
+      setLinks(updatedLinks);
+      localStorage.setItem("mprokolo-library-links", JSON.stringify(updatedLinks));
+      setSelectedLinks(new Set());
+    }
+  };
+
+  const selectAllLinks = () => {
+    if (selectedLinks.size === paginatedLinks.length) {
+      setSelectedLinks(new Set());
+    } else {
+      setSelectedLinks(new Set(paginatedLinks.map(link => link.id)));
+    }
   };
 
   return (
@@ -106,10 +146,20 @@ export default function LibraryPage() {
           categories={categories}
           onAddClick={() => setIsAddLinkModalOpen(true)}
           onSettingsClick={() => setIsCategoriesModalOpen(true)}
+          editMode={editMode}
+          onEditModeToggle={() => setEditMode(!editMode)}
+          selectedLinks={selectedLinks}
+          onSelectAll={selectAllLinks}
+          onDeleteSelected={handleDeleteSelected}
         />
 
         {/* Links Grid */}
-        <LinkGrid links={paginatedLinks} />
+        <LinkGrid 
+          links={paginatedLinks}
+          editMode={editMode}
+          selectedLinks={selectedLinks}
+          onLinkSelect={toggleLinkSelection}
+        />
 
         {/* Pagination */}
         <Pagination 
