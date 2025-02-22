@@ -1,3 +1,4 @@
+
 const LinkCard = ({ link }) => {
     // Handle category display safely
     const categoryName = typeof link.category === 'string' 

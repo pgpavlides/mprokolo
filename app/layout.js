@@ -10,7 +10,7 @@ const codeFont = Source_Code_Pro({
 });
 
 export const metadata = {
-  title: "MPROKOLO",
+  title: "Mprokolo Coder",
   description: "Documentation and Library",
 };
 
