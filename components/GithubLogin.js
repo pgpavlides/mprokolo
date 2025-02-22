@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Github, Loader2 } from 'lucide-react';
-import Logo from '@/components/Logo';
-import MatrixRain from '@/components/MatrixRain';
+import React, { useEffect, useState } from "react";
+import { Github, Loader2 } from "lucide-react";
+import Logo from "@/components/Logo";
+import MatrixRain from "@/components/MatrixRain";
 
 const GithubLogin = () => {
   const [loading, setLoading] = useState(true);
@@ -11,16 +11,16 @@ const GithubLogin = () => {
     // Check if user is already authenticated
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/repos');
+        const response = await fetch("/api/repos");
         if (response.ok) {
           // If authenticated, redirect to main page
-          window.location.href = '/';
+          window.location.href = "/";
         } else {
           // If not authenticated, show login button
           setLoading(false);
         }
       } catch (err) {
-        setError('Failed to check authentication status');
+        setError("Failed to check authentication status");
         setLoading(false);
       }
     };
@@ -29,7 +29,7 @@ const GithubLogin = () => {
   }, []);
 
   const handleLogin = () => {
-    window.location.href = '/api/auth';
+    window.location.href = "/api/auth";
   };
 
   if (loading) {
@@ -60,9 +60,11 @@ const GithubLogin = () => {
                      rounded-lg hover:bg-green-500 transition-all duration-300"
           >
             {/* Glow effect */}
-            <div className="absolute -inset-1 bg-green-500/20 rounded-lg blur opacity-0 
-                          group-hover:opacity-100 transition-opacity duration-300" />
-            
+            <div
+              className="absolute -inset-1 bg-green-500/20 rounded-lg blur opacity-0 
+                          group-hover:opacity-100 transition-opacity duration-300"
+            />
+
             {/* Button content */}
             <div className="relative flex items-center gap-3">
               <Github className="w-5 h-5 text-green-500 group-hover:text-black transition-colors" />
@@ -74,15 +76,13 @@ const GithubLogin = () => {
 
           {/* Error Message */}
           {error && (
-            <div className="mt-4 text-red-500 text-sm text-center">
-              {error}
-            </div>
+            <div className="mt-4 text-red-500 text-sm text-center">{error}</div>
           )}
         </div>
 
         {/* Version Number */}
         <div className="absolute bottom-4 text-green-700 text-sm animate-fade-in-delayed z-10">
-          Version 0.2.0
+          Version 0.3.0
         </div>
       </div>
     </>

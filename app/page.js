@@ -115,7 +115,7 @@ export default function Home() {
 
         {/* Version Number */}
         <div className="absolute bottom-4 text-green-700 text-sm animate-fade-in-delayed">
-          Version 0.2.0
+          Version 0.3.0
         </div>
       </div>
     </>
