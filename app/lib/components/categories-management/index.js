@@ -42,9 +42,18 @@ const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCate
     );
 
     const matchingLinks = links.filter(link =>
-      link && link.name && typeof link.name === 'string' &&
-      (link.name.toLowerCase().includes(searchLower) ||
-       link.link.toLowerCase().includes(searchLower))
+      link && link.name && typeof link.name === 'string' && (
+        // Search in name
+        link.name.toLowerCase().includes(searchLower) ||
+        // Search in URL
+        link.link.toLowerCase().includes(searchLower) ||
+        // Search in description
+        (link.description && link.description.toLowerCase().includes(searchLower)) ||
+        // Search in tags
+        (Array.isArray(link.tags) && link.tags.some(tag => 
+          tag.toLowerCase().includes(searchLower)
+        ))
+      )
     );
 
     return { categories: matchingCategories, links: matchingLinks };
