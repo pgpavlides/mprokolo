@@ -17,10 +17,10 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 
 ## Screenshots
 
-![Repositories View](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/2_repoview.png)
-![Single Repository View](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/3_repo_single.png)
-![Export Markdown](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/4_exportmd.png)
-![Export Selected Files](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/5_export_selected_files.png)
+![Repositories View](docs/screenshots/2_repoview.png)
+![Single Repository View](docs/screenshots/3_repo_single.png)
+![Export Markdown](docs/screenshots/4_exportmd.png)
+![Export Selected Files](docs/screenshots/5_export_selected_files.png)
 
 ## Prerequisites
 
