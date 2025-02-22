@@ -245,11 +245,11 @@ const EnhancedLibraryPage = () => {
           </div>
 
           {/* Links Grid */}
-          <div className="grid grid-cols-6 gap-2 mb-6">
+          <div className="grid grid-cols-6 gap-2 mb-10">
             {paginatedLinks.map((link) => (
               <div
                 key={link.id}
-                className="card group relative"
+                className="card group relative mb-12"
                 onClick={() => window.open(link.link, "_blank")}
               >
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-black/50 flex items-center justify-center">
