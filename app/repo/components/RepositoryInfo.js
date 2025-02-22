@@ -1,4 +1,6 @@
-import { Github, GitCommit } from "lucide-react";
+import { useState } from 'react';
+import { Github, GitCommit, History } from 'lucide-react';
+import CommitHistory from './CommitHistory';
 
 const languageColors = {
   JavaScript: "#f1e05a",
@@ -13,48 +15,71 @@ const languageColors = {
 };
 
 export default function RepositoryInfo({ repo, latestCommit }) {
+  const [showCommitHistory, setShowCommitHistory] = useState(false);
+
   return (
-    <div className="bg-black border border-green-800 rounded-lg p-4">
-      <div className="flex items-center gap-3 mb-2">
-        <Github className="w-6 h-6 text-green-500" />
-        <h1 className="text-xl font-bold text-green-400 truncate">
-          {repo.full_name}
-        </h1>
-      </div>
-      <div className="flex items-center gap-2 mb-2 text-sm">
-        <div className="flex items-center gap-2">
-          <span
-            className="w-3 h-3 rounded-full"
-            style={{
-              backgroundColor:
-                languageColors[repo.language] || languageColors.default,
-            }}
-          />
-          <span className="text-green-400">
-            {repo.language || "Unknown"}
-          </span>
+    <>
+      <div className="bg-black border border-green-800 rounded-lg p-4">
+        <div className="flex items-center gap-3 mb-2">
+          <Github className="w-6 h-6 text-green-500" />
+          <h1 className="text-xl font-bold text-green-400 truncate">
+            {repo.full_name}
+          </h1>
         </div>
-        {repo.size && (
-          <span className="text-green-600">
-            • {(repo.size / 1024).toFixed(2)} MB
-          </span>
-        )}
-      </div>
-      {latestCommit && (
-        <div className="border-t border-green-800/50 pt-2 mt-2">
-          <div className="flex items-center gap-2 text-sm text-green-600">
-            <GitCommit className="w-4 h-4" />
-            <span className="truncate">{latestCommit.commit.message}</span>
-          </div>
-          <div className="flex items-center gap-2 mt-1 text-xs text-green-700">
-            <span>{latestCommit.commit.author.name}</span>
-            <span>•</span>
-            <span>
-              {new Date(latestCommit.commit.author.date).toLocaleString()}
+        <div className="flex items-center gap-2 mb-2 text-sm">
+          <div className="flex items-center gap-2">
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{
+                backgroundColor:
+                  languageColors[repo.language] || languageColors.default,
+              }}
+            />
+            <span className="text-green-400">
+              {repo.language || "Unknown"}
             </span>
           </div>
+          {repo.size && (
+            <span className="text-green-600">
+              • {(repo.size / 1024).toFixed(2)} MB
+            </span>
+          )}
         </div>
+        {latestCommit && (
+          <div className="border-t border-green-800/50 pt-2 mt-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <GitCommit className="w-4 h-4" />
+                <span className="truncate">{latestCommit.commit.message}</span>
+              </div>
+              <button
+                onClick={() => setShowCommitHistory(true)}
+                className="flex items-center gap-1 px-2 py-1 text-xs text-green-500 hover:text-green-400 
+                         hover:bg-green-900/30 rounded transition-colors"
+                title="View commit history"
+              >
+                <History className="w-4 h-4" />
+                <span>History</span>
+              </button>
+            </div>
+            <div className="flex items-center gap-2 mt-1 text-xs text-green-700">
+              <span>{latestCommit.commit.author.name}</span>
+              <span>•</span>
+              <span>
+                {new Date(latestCommit.commit.author.date).toLocaleString()}
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Commit History Modal */}
+      {showCommitHistory && (
+        <CommitHistory
+          repoFullName={repo.full_name}
+          onClose={() => setShowCommitHistory(false)}
+        />
       )}
-    </div>
+    </>
   );
 }

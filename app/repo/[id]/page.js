@@ -260,7 +260,7 @@ export default function RepoDetail({ params }) {
 
       <div className="h-16 border-b border-green-800 px-4 flex items-center">
         <Link
-          href="/"
+          href="/github"
           className="flex items-center gap-2 text-green-400 hover:text-green-300"
         >
           <ArrowLeft className="w-5 h-5" />
