@@ -1,4 +1,6 @@
-# Broccoli GitHub Creator
+# Broccoli GitHub Creator 🥦
+
+![Home Screen](docs/screenshots/1_home.png)
 
 ## Overview
 
@@ -6,20 +8,19 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 
 ## Features
 
-- GitHub Authentication
-- Repository Browsing
-- Repository Structure Visualization
-- Markdown Documentation Generation
-- Selective File Export
-- Matrix-themed UI
+- 🌱 GitHub Authentication
+- 📂 Repository Browsing
+- 📊 Repository Structure Visualization
+- 📝 Markdown Documentation Generation
+- 📤 Selective File Export
+- 💚 Matrix-themed UI
 
 ## Screenshots
 
-![Home Screen](/docs/screenshots/1_home.png)
-![Repositories View](/docs/screenshots/2_repoview.png)
-![Single Repository View](/docs/screenshots/3_repo_single.png)
-![Export Markdown](/docs/screenshots/4_exportmd.png)
-![Export Selected Files](/docs/screenshots/5_export_selected_files.png)
+![Repositories View](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/2_repoview.png)
+![Single Repository View](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/3_repo_single.png)
+![Export Markdown](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/4_exportmd.png)
+![Export Selected Files](https://raw.githubusercontent.com/YourUsername/YourRepositoryName/main/docs/screenshots/5_export_selected_files.png)
 
 ## Prerequisites
 
@@ -29,40 +30,44 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 
 ## Installation
 
-1. Clone the repository
+1. 🌱 Clone the repository
 ```bash
 git clone https://github.com/yourusername/mprokolo-lib.git
 cd mprokolo-lib
 ```
 
-2. Create a GitHub OAuth App
+2. 🌱 Create a GitHub OAuth App
 - Go to GitHub Settings > Developer Settings > OAuth Apps
 - Create a new OAuth App with:
   - Homepage URL: `http://localhost:3000`
   - Authorization callback URL: `http://localhost:3000/api/auth/callback`
 
-3. Create a `.env.local` file in the project root
+3. 🌱 Create a `.env.local` file in the project root
 ```env
 GITHUB_CLIENT_ID=your_github_client_id
 GITHUB_CLIENT_SECRET=your_github_client_secret
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-4. Install dependencies
+4. 🌱 Install dependencies
 ```bash
 npm install
 # or
 yarn install
 ```
 
-5. Run the development server
+5. 🌱 Run the development server
 ```bash
 npm run dev
 # or
 yarn dev
 ```
 
-6. Open `http://localhost:3000` in your browser
+6. 🌱 Open `http://localhost:3000` in your browser
+
+7. 🌱 Authenticate with github.
+
+8. 🌱 Enjoy!
 
 ## Environment Variables
 
@@ -94,10 +99,12 @@ yarn dev
 
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+This software is free to use for personal and commercial purposes. However, redistribution, modification for distribution, or resale of this software or its components is strictly prohibited without explicit written permission from the author.
+
+This software is provided "as is," without warranty of any kind.
 
 ## Contact
 
-Your Name - [Your Email]
+Your Name - pgpavlides@gmail.com
 
 Project Link: [https://github.com/yourusername/mprokolo-lib](https://github.com/yourusername/mprokolo-lib)
