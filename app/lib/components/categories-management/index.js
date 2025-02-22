@@ -7,7 +7,8 @@ import EditFolderModal from './components/EditFolderModal';
 import DebugPanel from './components/DebugPanel';
 import StatisticsPanel from './components/StatisticsPanel';
 import TipsPanel from './components/TipsPanel';
-import { renderIcon, availableIcons } from './icons';
+import IconPickerModal from './components/IconPickerModal';
+import { renderIcon } from './icons';
 
 const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCategoriesUpdate }) => {
   const [categories, setCategories] = useState(() => {
@@ -18,11 +19,12 @@ const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCate
   const [selectedItems, setSelectedItems] = useState(new Set());
   const [expandedFolders, setExpandedFolders] = useState(new Set());
   const [searchTerm, setSearchTerm] = useState('');
-  const [newCategory, setNewCategory] = useState({ name: '', icon: 'folder' });
+  const [newCategory, setNewCategory] = useState({ name: '', icon: '' });
   const [links, setLinks] = useState([]);
   const [editMode, setEditMode] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
 
   // Load links
   useEffect(() => {
@@ -43,16 +45,10 @@ const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCate
 
     const matchingLinks = links.filter(link =>
       link && link.name && typeof link.name === 'string' && (
-        // Search in name
         link.name.toLowerCase().includes(searchLower) ||
-        // Search in URL
         link.link.toLowerCase().includes(searchLower) ||
-        // Search in description
         (link.description && link.description.toLowerCase().includes(searchLower)) ||
-        // Search in tags
-        (Array.isArray(link.tags) && link.tags.some(tag => 
-          tag.toLowerCase().includes(searchLower)
-        ))
+        (Array.isArray(link.tags) && link.tags.some(tag => tag.toLowerCase().includes(searchLower)))
       )
     );
 
@@ -127,7 +123,7 @@ const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCate
       const updatedCategories = [...categories, newCategoryObj];
       setCategories(updatedCategories);
       onCategoriesUpdate(updatedCategories);
-      setNewCategory({ name: '', icon: 'folder' });
+      setNewCategory({ name: '', icon: '' });
     }
   };
 
@@ -313,20 +309,19 @@ const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCate
                   className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
                 />
 
-                <div className="grid grid-cols-4 gap-2 p-2 bg-black border border-green-800 rounded-lg">
-                  {Object.entries(availableIcons).map(([name]) => (
-                    <button
-                      key={name}
-                      onClick={() => setNewCategory(prev => ({ ...prev, icon: name }))}
-                      className={`p-2 rounded-lg hover:bg-green-900/30 ${
-                        newCategory.icon === name ? 'bg-green-900/50 border border-green-400' : ''
-                      }`}
-                    >
-                      <div className="text-green-500 w-5 h-5">
-                        {renderIcon(name)}
-                      </div>
-                    </button>
-                  ))}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span className="text-green-400">Icon:</span>
+                    <div className="w-6 h-6 text-green-500">
+                      {newCategory.icon ? renderIcon(newCategory.icon) : 'None'}
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setIsIconPickerOpen(true)}
+                    className="px-3 py-1 bg-green-900/30 border border-green-800 rounded-lg text-green-400 hover:bg-green-900/50"
+                  >
+                    Select Icon
+                  </button>
                 </div>
 
                 <button
@@ -362,6 +357,7 @@ const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCate
           onClose={() => setEditingLink(null)}
           link={editingLink}
           onSave={handleSaveLink}
+          categories={categories}
         />
       )}
 
@@ -373,6 +369,12 @@ const CategoriesManagement = ({ isOpen, onClose, existingCategories = [], onCate
           onSave={handleSaveCategory}
         />
       )}
+
+      <IconPickerModal
+        isOpen={isIconPickerOpen}
+        onClose={() => setIsIconPickerOpen(false)}
+        onIconSelect={(iconName) => setNewCategory(prev => ({ ...prev, icon: iconName }))}
+      />
     </div>
   );
 };

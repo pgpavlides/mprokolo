@@ -1,10 +1,12 @@
 // app/lib/components/categories-management/components/EditFolderModal.js
 import { useState } from 'react';
 import { X } from 'lucide-react';
-import { availableIcons, renderIcon } from '../icons';
+import { renderIcon } from '../icons';
+import IconPickerModal from './IconPickerModal';
 
 const EditFolderModal = ({ isOpen, onClose, category, onSave }) => {
   const [editedCategory, setEditedCategory] = useState(category);
+  const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
 
   const handleSave = () => {
     onSave(editedCategory);
@@ -32,23 +34,19 @@ const EditFolderModal = ({ isOpen, onClose, category, onSave }) => {
             className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
           />
 
-          <div>
-            <label className="block text-sm text-green-400 mb-2">Select Icon</label>
-            <div className="grid grid-cols-4 gap-2 p-2 bg-black border border-green-800 rounded-lg">
-              {Object.entries(availableIcons).map(([name]) => (
-                <button
-                  key={name}
-                  onClick={() => setEditedCategory(prev => ({ ...prev, icon: name }))}
-                  className={`p-2 rounded-lg hover:bg-green-900/30 ${
-                    editedCategory.icon === name ? 'bg-green-900/50 border border-green-400' : ''
-                  }`}
-                >
-                  <div className="text-green-500 w-5 h-5">
-                    {renderIcon(name)}
-                  </div>
-                </button>
-              ))}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <span className="text-green-400">Current Icon:</span>
+              <div className="w-6 h-6 text-green-500">
+                {editedCategory.icon ? renderIcon(editedCategory.icon) : 'None'}
+              </div>
             </div>
+            <button
+              onClick={() => setIsIconPickerOpen(true)}
+              className="px-3 py-1 bg-green-900/30 border border-green-800 rounded-lg text-green-400 hover:bg-green-900/50"
+            >
+              Select Icon
+            </button>
           </div>
 
           <button
@@ -59,6 +57,12 @@ const EditFolderModal = ({ isOpen, onClose, category, onSave }) => {
           </button>
         </div>
       </div>
+
+      <IconPickerModal
+        isOpen={isIconPickerOpen}
+        onClose={() => setIsIconPickerOpen(false)}
+        onIconSelect={(iconName) => setEditedCategory(prev => ({ ...prev, icon: iconName }))}
+      />
     </div>
   );
 };

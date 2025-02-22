@@ -1,8 +1,10 @@
 // app/lib/components/categories-management/icons.js
 import React from 'react';
 import * as FaIcons from 'react-icons/fa';
+import * as MdIcons from 'react-icons/md';
+import * as IoIcons from 'react-icons/io5';
+import * as GiIcons from 'react-icons/gi';
 
-// Export both availableIcons and renderIcon
 export const availableIcons = {
   folder: FaIcons.FaFolder,
   code: FaIcons.FaCode,
@@ -19,7 +21,22 @@ export const availableIcons = {
   pen: FaIcons.FaPen,
   chart: FaIcons.FaChartBar,
   gamepad: FaIcons.FaGamepad,
-  shield: FaIcons.FaShieldAlt
+  shield: FaIcons.FaShieldAlt,
+  home: MdIcons.MdHome,
+  star: FaIcons.FaStar,
+  heart: FaIcons.FaHeart,
+  music: FaIcons.FaMusic,
+  camera: FaIcons.FaCamera,
+  car: FaIcons.FaCar,
+  airplane: FaIcons.FaPlane,
+  bicycle: FaIcons.FaBicycle,
+  wine: FaIcons.FaWineGlassAlt,
+  coffee: FaIcons.FaCoffee,
+  apple: FaIcons.FaApple,
+  android: FaIcons.FaAndroid,
+  basketball: FaIcons.FaBasketballBall,
+  football: FaIcons.FaFootballBall,
+  // You can add many more icons as needed...
 };
 
 export const renderIcon = (iconName) => {
