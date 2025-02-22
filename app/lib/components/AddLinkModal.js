@@ -23,13 +23,11 @@ const AddLinkModal = ({ isOpen, onClose, onAddLink, categories }) => {
       .map((tag) => tag.trim())
       .filter((tag) => tag);
 
-    // Find the full category object based on the selected value
-    const selectedCategory = categories.find(cat => cat.name === newLink.category);
-
     onAddLink({
       ...newLink,
       tags: processedTags,
-      category: selectedCategory || "", // Store the entire category object if found
+      // Store the category name directly
+      category: newLink.category || "",
     });
 
     // Reset form
@@ -46,10 +44,10 @@ const AddLinkModal = ({ isOpen, onClose, onAddLink, categories }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="w-full max-w-md bg-black border border-green-800 rounded-lg p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-green-400">Add New Link</h2>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-black border border-green-800 rounded-lg p-6 w-[600px]">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-lg font-semibold text-green-400">Add New Link</h2>
           <button
             onClick={onClose}
             className="text-green-500 hover:text-green-400"
@@ -83,7 +81,7 @@ const AddLinkModal = ({ isOpen, onClose, onAddLink, categories }) => {
             className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400 placeholder-green-700"
           />
           <select
-            value={newLink.category || ''}
+            value={newLink.category}
             onChange={(e) => setNewLink(prev => ({ ...prev, category: e.target.value }))}
             className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
           >

@@ -4,16 +4,15 @@ import { useState, useEffect, useMemo } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import MatrixRain from '@/components/MatrixRain';
-import CategoriesManagement from './components/categories-management';
 import TopBar from './components/TopBar';
 import LinkGrid from './components/LinkGrid';
 import Pagination from './components/Pagination';
 import AddLinkModal from './components/AddLinkModal';
+import CategoriesManagement from './components/categories-management';
 
 const LinksPerPage = 18; // 6x3 grid
 
 export default function LibraryPage() {
-  // State management
   const [links, setLinks] = useState([]);
   const [categories, setCategories] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -21,10 +20,8 @@ export default function LibraryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [editMode, setEditMode] = useState(false);
   const [selectedLinks, setSelectedLinks] = useState(new Set());
-  
-  // Modal states
-  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
   const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
+  const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
 
   // Load data from localStorage
   useEffect(() => {
@@ -34,6 +31,15 @@ export default function LibraryPage() {
     if (savedLinks) setLinks(JSON.parse(savedLinks));
     if (savedCategories) setCategories(JSON.parse(savedCategories));
   }, []);
+
+  // Save data to localStorage when it changes
+  useEffect(() => {
+    localStorage.setItem("mprokolo-library-links", JSON.stringify(links));
+  }, [links]);
+
+  useEffect(() => {
+    localStorage.setItem("mprokolo-library-categories", JSON.stringify(categories));
+  }, [categories]);
 
   // Reset selected links when exiting edit mode
   useEffect(() => {
@@ -60,7 +66,6 @@ export default function LibraryPage() {
 
   const totalPages = Math.ceil(filteredLinks.length / LinksPerPage);
 
-  // Handlers
   const handleAddLink = (newLink) => {
     if (!newLink.thumbnail) {
       try {
@@ -71,21 +76,17 @@ export default function LibraryPage() {
       }
     }
 
-    const updatedLinks = [...links, { ...newLink, id: Date.now() }];
-    setLinks(updatedLinks);
-    localStorage.setItem("mprokolo-library-links", JSON.stringify(updatedLinks));
+    const linkToAdd = {
+      ...newLink,
+      id: Date.now()
+    };
+
+    setLinks(prev => [...prev, linkToAdd]);
     setIsAddLinkModalOpen(false);
   };
 
   const handleCategoriesUpdate = (updatedCategories) => {
-    const formattedCategories = updatedCategories.map(cat => ({
-      id: cat.id || `cat-${cat.name}`,
-      name: cat.name,
-      icon: cat.icon || 'folder'
-    }));
-    
-    setCategories(formattedCategories);
-    localStorage.setItem("mprokolo-library-categories", JSON.stringify(formattedCategories));
+    setCategories(updatedCategories);
     setIsCategoriesModalOpen(false);
   };
 
@@ -109,7 +110,6 @@ export default function LibraryPage() {
     if (confirm(`Are you sure you want to delete ${selectedLinks.size} selected link(s)?`)) {
       const updatedLinks = links.filter(link => !selectedLinks.has(link.id));
       setLinks(updatedLinks);
-      localStorage.setItem("mprokolo-library-links", JSON.stringify(updatedLinks));
       setSelectedLinks(new Set());
     }
   };
@@ -169,23 +169,21 @@ export default function LibraryPage() {
         />
 
         {/* Modals */}
-        {isCategoriesModalOpen && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-6">
-            <CategoriesManagement
-              isOpen={true}
-              onClose={() => setIsCategoriesModalOpen(false)}
-              existingCategories={categories}
-              onCategoriesUpdate={handleCategoriesUpdate}
-            />
-          </div>
-        )}
-
         <AddLinkModal 
           isOpen={isAddLinkModalOpen}
           onClose={() => setIsAddLinkModalOpen(false)}
           onAddLink={handleAddLink}
           categories={categories}
         />
+
+        {isCategoriesModalOpen && (
+          <CategoriesManagement
+            isOpen={true}
+            onClose={() => setIsCategoriesModalOpen(false)}
+            existingCategories={categories}
+            onCategoriesUpdate={handleCategoriesUpdate}
+          />
+        )}
       </div>
     </>
   );
