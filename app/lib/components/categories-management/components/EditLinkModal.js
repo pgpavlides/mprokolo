@@ -1,12 +1,22 @@
 // app/lib/components/categories-management/components/EditLinkModal.js
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 
-const EditLinkModal = ({ isOpen, onClose, link, onSave }) => {
+const EditLinkModal = ({ isOpen, onClose, link, onSave, categories }) => {
   const [editedLink, setEditedLink] = useState(link);
+  const [tagInput, setTagInput] = useState(link.tags?.join(', ') || '');
+
+  useEffect(() => {
+    setEditedLink(link);
+    setTagInput(link.tags?.join(', ') || '');
+  }, [link]);
 
   const handleSave = () => {
-    onSave(editedLink);
+    const updatedLink = {
+      ...editedLink,
+      tags: tagInput.split(',').map(tag => tag.trim()).filter(Boolean)
+    };
+    onSave(updatedLink);
     onClose();
   };
 
@@ -21,7 +31,6 @@ const EditLinkModal = ({ isOpen, onClose, link, onSave }) => {
             <X className="w-5 h-5" />
           </button>
         </div>
-
         <div className="space-y-4">
           <input
             type="text"
@@ -30,7 +39,6 @@ const EditLinkModal = ({ isOpen, onClose, link, onSave }) => {
             placeholder="Link Name"
             className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
           />
-          
           <input
             type="url"
             value={editedLink.link}
@@ -38,7 +46,6 @@ const EditLinkModal = ({ isOpen, onClose, link, onSave }) => {
             placeholder="URL"
             className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
           />
-
           <textarea
             value={editedLink.description || ''}
             onChange={(e) => setEditedLink(prev => ({ ...prev, description: e.target.value }))}
@@ -46,18 +53,28 @@ const EditLinkModal = ({ isOpen, onClose, link, onSave }) => {
             className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
             rows="3"
           />
-
+          <div>
+            <label className="block text-green-400 mb-1">Category</label>
+            <select
+              value={editedLink.category}
+              onChange={(e) => setEditedLink(prev => ({ ...prev, category: e.target.value }))}
+              className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
+            >
+              <option value="Uncategorized">Uncategorized</option>
+              {categories.map(category => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
           <input
             type="text"
-            value={editedLink.tags?.join(', ') || ''}
-            onChange={(e) => setEditedLink(prev => ({ 
-              ...prev, 
-              tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-            }))}
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
             placeholder="Tags (comma separated)"
             className="w-full bg-black border border-green-800 rounded-lg p-2 text-green-400"
           />
-
           <button
             onClick={handleSave}
             className="w-full px-4 py-2 bg-green-900 text-green-100 rounded-lg hover:bg-green-800"

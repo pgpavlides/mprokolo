@@ -1,3 +1,4 @@
+// app/lib/components/AddLinkModal.js
 import { useState } from 'react';
 import { X } from 'lucide-react';
 
@@ -26,8 +27,8 @@ const AddLinkModal = ({ isOpen, onClose, onAddLink, categories }) => {
     onAddLink({
       ...newLink,
       tags: processedTags,
-      // Store the category name directly
-      category: newLink.category || "",
+      // If no category selected, default to "Uncategorized"
+      category: newLink.category || "Uncategorized",
     });
 
     // Reset form
@@ -48,10 +49,7 @@ const AddLinkModal = ({ isOpen, onClose, onAddLink, categories }) => {
       <div className="bg-black border border-green-800 rounded-lg p-6 w-[600px]">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-lg font-semibold text-green-400">Add New Link</h2>
-          <button
-            onClick={onClose}
-            className="text-green-500 hover:text-green-400"
-          >
+          <button onClick={onClose} className="text-green-500 hover:text-green-400">
             <X className="w-5 h-5" />
           </button>
         </div>
