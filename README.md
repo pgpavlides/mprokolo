@@ -106,5 +106,3 @@ This software is provided "as is," without warranty of any kind.
 ## Contact
 
 Your Name - pgpavlides@gmail.com
-
-Project Link: [https://github.com/yourusername/mprokolo-lib](https://github.com/yourusername/mprokolo-lib)
