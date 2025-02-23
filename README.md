@@ -75,6 +75,8 @@ yarn dev
 - `GITHUB_CLIENT_SECRET`: GitHub OAuth App Client Secret
 - `NEXT_PUBLIC_APP_URL`: Your application's base URL
 
+And on your deploy site
+
 ## Technologies
 
 - Next.js 15
