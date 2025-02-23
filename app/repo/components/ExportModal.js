@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { X, Plus, Trash2 } from "lucide-react";
+import { X, Plus, Trash2, SplitSquareHorizontal } from "lucide-react";
 
 const DEFAULT_EXCLUDED_FOLDERS = [
   "build",
@@ -8,105 +8,34 @@ const DEFAULT_EXCLUDED_FOLDERS = [
   "node_modules",
   ".next",
 ];
+
 const DEFAULT_EXCLUDED_FILES = ["package-lock.json"];
+
 const DEFAULT_EXCLUDED_TYPES = [
   // Documentation files
   "md",
   // Image files
-  "jpg",
-  "jpeg",
-  "png",
-  "gif",
-  "bmp",
-  "svg",
-  "webp",
-  "ico",
-  "tiff",
-  "raw",
-  "heic",
-  "heif",
-  "avif",
-  "psd",
-  "ai",
-  "eps",
-  "sketch",
+  "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "ico", "tiff", "raw",
+  "heic", "heif", "avif", "psd", "ai", "eps", "sketch",
   // 3D files
-  "glb",
-  "gltf",
-  "fbx",
-  "obj",
-  "stl",
+  "glb", "gltf", "fbx", "obj", "stl",
   // Audio files
-  "mp3",
-  "wav",
-  "ogg",
-  "flac",
-  "m4a",
-  "aac",
-  "wma",
-  "aiff",
-  "alac",
-  "mid",
-  "midi",
-  "ac3",
-  "amr",
-  "ape",
-  "au",
-  "mka",
-  "ra",
-  "voc",
+  "mp3", "wav", "ogg", "flac", "m4a", "aac", "wma", "aiff", "alac",
+  "mid", "midi", "ac3", "amr", "ape", "au", "mka", "ra", "voc",
   // Audio project files
-  "aup",
-  "sesx",
-  "als",
-  "flp",
-  "band",
-  "logic",
-  "ptx",
-  "rpp",
+  "aup", "sesx", "als", "flp", "band", "logic", "ptx", "rpp",
 ];
 
 const FILE_TYPE_GROUPS = {
   documentation: ["md"],
   images: [
-    "jpg",
-    "jpeg",
-    "png",
-    "gif",
-    "bmp",
-    "svg",
-    "webp",
-    "ico",
-    "tiff",
-    "raw",
-    "heic",
-    "heif",
-    "avif",
-    "psd",
-    "ai",
-    "eps",
-    "sketch",
+    "jpg", "jpeg", "png", "gif", "bmp", "svg", "webp", "ico", "tiff", "raw",
+    "heic", "heif", "avif", "psd", "ai", "eps", "sketch",
   ],
   models3d: ["glb", "gltf", "fbx", "obj", "stl"],
   audio: [
-    "mp3",
-    "wav",
-    "ogg",
-    "flac",
-    "m4a",
-    "aac",
-    "wma",
-    "aiff",
-    "alac",
-    "mid",
-    "midi",
-    "ac3",
-    "amr",
-    "ape",
-    "au",
-    "mka",
-    "ra",
-    "voc",
+    "mp3", "wav", "ogg", "flac", "m4a", "aac", "wma", "aiff", "alac",
+    "mid", "midi", "ac3", "amr", "ape", "au", "mka", "ra", "voc",
   ],
   audioProjects: ["aup", "sesx", "als", "flp", "band", "logic", "ptx", "rpp"],
 };
@@ -117,19 +46,15 @@ export default function ExportModal({
   onExport,
   folders = [],
 }) {
-  // Default checked state for common exclusions
-  const [defaultExclusionsEnabled, setDefaultExclusionsEnabled] =
-    useState(true);
-
-  // Custom exclusions
+  const [defaultExclusionsEnabled, setDefaultExclusionsEnabled] = useState(true);
   const [customFolders, setCustomFolders] = useState([]);
   const [customFiles, setCustomFiles] = useState([]);
   const [customTypes, setCustomTypes] = useState([]);
-
-  // Input states
   const [newFolder, setNewFolder] = useState("");
   const [newFile, setNewFile] = useState("");
   const [newType, setNewType] = useState("");
+  const [splitFiles, setSplitFiles] = useState(false);
+  const [splitSize, setSplitSize] = useState(50);
 
   const handleSubmit = () => {
     const exclusions = {
@@ -145,6 +70,10 @@ export default function ExportModal({
         ...(defaultExclusionsEnabled ? DEFAULT_EXCLUDED_TYPES : []),
         ...customTypes,
       ],
+      splitOptions: {
+        enabled: splitFiles,
+        size: splitSize
+      }
     };
     onExport(exclusions);
     onClose();
@@ -176,6 +105,42 @@ export default function ExportModal({
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* Split Files Option */}
+        <div className="mb-6 bg-green-900/20 border border-green-800 rounded-lg p-4">
+          <label className="flex items-center space-x-2 text-green-400 mb-4">
+            <input
+              type="checkbox"
+              checked={splitFiles}
+              onChange={(e) => setSplitFiles(e.target.checked)}
+              className="form-checkbox bg-black border-green-800 text-green-500 rounded"
+            />
+            <span className="flex items-center gap-2">
+              <SplitSquareHorizontal className="w-4 h-4" />
+              Split into Multiple Files
+            </span>
+          </label>
+
+          {splitFiles && (
+            <div className="space-y-2">
+              <label className="block text-sm text-green-400">
+                Files per Split:
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="1000"
+                value={splitSize}
+                onChange={(e) => setSplitSize(Number(e.target.value))}
+                className="w-full bg-black border border-green-800 rounded p-2 
+                         text-green-400 placeholder-green-700"
+              />
+              <p className="text-xs text-green-600">
+                Each MD file will contain up to {splitSize} files
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Default Exclusions */}
@@ -340,7 +305,7 @@ export default function ExportModal({
           onClick={handleSubmit}
           className="w-full bg-green-900 text-green-100 rounded-lg py-2 hover:bg-green-800 transition-colors"
         >
-          Generate Markdown
+          Generate {splitFiles ? 'Markdown Files' : 'Markdown'}
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Copy, FileDown, Files } from "lucide-react";
+import { Copy, FileDown, Files, FileInput } from "lucide-react";
 
 const CardButton = ({ icon: Icon, label, onClick }) => (
   <button
@@ -10,17 +10,18 @@ const CardButton = ({ icon: Icon, label, onClick }) => (
   </button>
 );
 
-export default function QuickActions({ onCopyTree, onCreateMd, onSelectFiles }) {
+export default function QuickActions({ onCopyTree, onCreateMd, onSelectFiles, onMdToFiles }) {
   const actions = [
     { icon: Copy, label: "Copy Tree", handler: onCopyTree },
     { icon: FileDown, label: "Create MD", handler: onCreateMd },
     { icon: Files, label: "Select Files", handler: onSelectFiles },
+    { icon: FileInput, label: "MD to Files", handler: onMdToFiles }
   ];
 
   return (
     <div className="bg-black border border-green-800 rounded-lg p-4">
-      <h2 className="text-sm font-semibold mb-3">Quick Actions</h2>
-      <div className="grid grid-cols-3 gap-2">
+      <h2 className="text-sm font-semibold text-green-400 mb-3">Quick Actions</h2>
+      <div className="grid grid-cols-4 gap-2">
         {actions.map((action) => (
           <CardButton
             key={action.label}

@@ -1,5 +1,3 @@
-'use client';
-
 import React, { useState } from 'react';
 import { X, FileText, Folder, Upload, AlertTriangle } from 'lucide-react';
 

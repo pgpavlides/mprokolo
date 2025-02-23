@@ -12,6 +12,7 @@ import FileSelector from "../components/FileSelector";
 import RepositoryInfo from "../components/RepositoryInfo";
 import QuickActions from "../components/QuickActions";
 import FileTree from "../components/FileTree";
+import MdToFilesModal from "../components/MdToFilesModal";
 
 export default function RepoDetail({ params }) {
   const { id } = use(params);
@@ -22,6 +23,7 @@ export default function RepoDetail({ params }) {
   const [toastMessage, setToastMessage] = useState("");
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isFileSelectorOpen, setIsFileSelectorOpen] = useState(false);
+  const [isMdToFilesModalOpen, setIsMdToFilesModalOpen] = useState(false);
   const [latestCommit, setLatestCommit] = useState(null);
   const [progressState, setProgressState] = useState({
     isGenerating: false,
@@ -73,13 +75,23 @@ export default function RepoDetail({ params }) {
 
   const showToast = (message) => {
     setToastMessage(message);
-    setTimeout(() => setToastMessage(""), 2000);
+    setTimeout(() => setToastMessage(""), 3000);
   };
 
   const handleCopyTree = () => {
-    const treeText = generateTreeText(treeData);
-    navigator.clipboard.writeText(treeText);
-    showToast("Tree structure copied to clipboard!");
+    try {
+      const treeText = generateTreeText(treeData);
+      const textarea = document.createElement('textarea');
+      textarea.value = treeText;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast("Tree structure copied to clipboard!");
+    } catch (error) {
+      console.error("Error copying tree:", error);
+      showToast("Failed to copy tree structure");
+    }
   };
 
   const handleCreateMd = () => {
@@ -92,9 +104,19 @@ export default function RepoDetail({ params }) {
 
   const handleSelectedFilesExport = async (selectedTreeData, type) => {
     if (type === 'copy') {
-      const treeText = generateTreeText(selectedTreeData);
-      await navigator.clipboard.writeText(treeText);
-      showToast("Selected files copied to clipboard!");
+      try {
+        const treeText = generateTreeText(selectedTreeData);
+        const textarea = document.createElement('textarea');
+        textarea.value = treeText;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        showToast("Selected files copied to clipboard!");
+      } catch (error) {
+        console.error("Error copying selected files:", error);
+        showToast("Failed to copy selected files");
+      }
       return;
     }
 
@@ -128,17 +150,54 @@ export default function RepoDetail({ params }) {
         }
       );
 
-      await navigator.clipboard.writeText(markdown);
-      
-      const blob = new Blob([markdown], { type: "text/markdown" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${repo.name}-selected-files.md`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Handle the export result (either single or multiple files)
+      if (Array.isArray(markdown)) {
+        // Multiple files
+        for (const file of markdown) {
+          const blob = new Blob([file.content], { type: "text/markdown" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = file.filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = markdown[0].content;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        } catch (clipboardError) {
+          console.warn('Could not copy to clipboard:', clipboardError);
+        }
+      } else {
+        // Single file
+        const blob = new Blob([markdown.content], { type: "text/markdown" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = markdown.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = markdown.content;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        } catch (clipboardError) {
+          console.warn('Could not copy to clipboard:', clipboardError);
+        }
+      }
 
       setTimeout(() => {
         showToast("Selected files exported successfully!");
@@ -177,17 +236,54 @@ export default function RepoDetail({ params }) {
         }
       );
 
-      await navigator.clipboard.writeText(markdown);
-      
-      const blob = new Blob([markdown], { type: "text/markdown" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `${repo.name}-documentation.md`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      // Handle either single file or multiple files
+      if (Array.isArray(markdown)) {
+        // Multiple files
+        for (const file of markdown) {
+          const blob = new Blob([file.content], { type: "text/markdown" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = file.filename;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        }
+        
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = markdown[0].content;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        } catch (clipboardError) {
+          console.warn('Could not copy to clipboard:', clipboardError);
+        }
+      } else {
+        // Single file
+        const blob = new Blob([markdown.content], { type: "text/markdown" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = markdown.filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        try {
+          const textarea = document.createElement('textarea');
+          textarea.value = markdown.content;
+          document.body.appendChild(textarea);
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        } catch (clipboardError) {
+          console.warn('Could not copy to clipboard:', clipboardError);
+        }
+      }
 
       setTimeout(() => {
         showToast("Documentation generated and downloaded!");
@@ -249,6 +345,11 @@ export default function RepoDetail({ params }) {
         repoName={repo.name}
       />
 
+      <MdToFilesModal
+        isOpen={isMdToFilesModalOpen}
+        onClose={() => setIsMdToFilesModalOpen(false)}
+      />
+
       {progressState.isGenerating && (
         <LoadingProgress
           current={progressState.current}
@@ -276,6 +377,7 @@ export default function RepoDetail({ params }) {
               onCopyTree={handleCopyTree}
               onCreateMd={handleCreateMd}
               onSelectFiles={handleSelectFiles}
+              onMdToFiles={() => setIsMdToFilesModalOpen(true)}
             />
           </div>
           <FileTree treeData={treeData} />
