@@ -2,9 +2,13 @@
 
 ![Home Screen](docs/screenshots/1_home.png)
 
+## LINK https://mprokolo.gr/
+
 ## Overview
 
 Broccoli GitHub Creator is a web application that simplifies GitHub repository documentation and exploration. It provides an intuitive interface for browsing, documenting, and managing GitHub repositories.
+
+
 
 ## Features
 
@@ -12,6 +16,8 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 - 📂 Repository Browsing
 - 📊 Repository Structure Visualization
 - 📝 Markdown Documentation Generation
+- 🥦Bookmark Library Management
+- 🥦Sync Chrome Bookmark using Extention
 - 📤 Selective File Export
 - 💚 Matrix-themed UI
 
@@ -21,6 +27,9 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 ![Single Repository View](docs/screenshots/3_repo_single.png)
 ![Export Markdown](docs/screenshots/4_exportmd.png)
 ![Export Selected Files](docs/screenshots/5_export_selected_files.png)
+![Export Selected Files](docs/screenshots/6_bookmark_library.png)
+![Export Selected Files](docs/screenshots/7_bookmark_sync.png)
+![Export Selected Files](docs/screenshots/8_bookmark_management.png)
 
 ## Prerequisites
 
