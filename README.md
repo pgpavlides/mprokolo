@@ -37,7 +37,7 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 - npm or yarn
 - GitHub Account
 
-## Installation
+## Local Installation
 
 1. 🌱 Clone the repository
 ```bash
