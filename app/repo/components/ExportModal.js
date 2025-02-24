@@ -24,6 +24,12 @@ const DEFAULT_EXCLUDED_TYPES = [
   "mid", "midi", "ac3", "amr", "ape", "au", "mka", "ra", "voc",
   // Audio project files
   "aup", "sesx", "als", "flp", "band", "logic", "ptx", "rpp",
+
+  // Video
+  "mp4", 
+
+   // Video
+   "zip", "rar", "7zip", "tar", "gz", "bz2", "xz", "zst", "lz4", "zstd", "lzip", "lzma", "cab", "arj", "iso", "dmg", "vhd", "vmdk", "vhdx", "qcow2", "vdi", "hdd", "img", "wim", "swm", "esd", "sdi", "dat", "bin", "cue", "nrg", "mdf", "mds", "mdx", "ccd", "cif", "b6t", "b5t", "bwt", "ima", "flp", "dsk", "d64", "adf", "g64", "cso", "ciso", "isz", "nfs", "wbfs", "wia", "wdf",
 ];
 
 const FILE_TYPE_GROUPS = {
