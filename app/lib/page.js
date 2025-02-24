@@ -1,4 +1,3 @@
-// app/lib/page.js
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -11,6 +10,7 @@ import Pagination from './components/Pagination';
 import AddLinkModal from './components/AddLinkModal';
 import CategoriesManagement from './components/categories-management';
 import EditLinkModal from './components/categories-management/components/EditLinkModal';
+import BookmarksSyncModal from './components/BookmarksSyncModal';
 
 const LinksPerPage = 18; // 6x3 grid
 
@@ -24,6 +24,7 @@ export default function LibraryPage() {
   const [selectedLinks, setSelectedLinks] = useState(new Set());
   const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
   const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
+  const [isBookmarksSyncModalOpen, setIsBookmarksSyncModalOpen] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
 
   // Load data from localStorage
@@ -50,7 +51,7 @@ export default function LibraryPage() {
     }
   }, [editMode]);
 
-  // Filter links based on search term and selected category, including tag search
+  // Filter links based on search term and selected category
   const filteredLinks = useMemo(() => {
     const lowerSearch = searchTerm.toLowerCase();
     return links.filter(link =>
@@ -74,17 +75,47 @@ export default function LibraryPage() {
 
   // Handle adding a new link
   const handleAddLink = (newLink) => {
-    if (!newLink.thumbnail) {
+    const linkToAdd = {
+      ...newLink,
+      id: `link_${newLink.name}_${newLink.link}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    };
+
+    if (!linkToAdd.thumbnail) {
       try {
-        const url = new URL(newLink.link);
-        newLink.thumbnail = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
+        const url = new URL(linkToAdd.link);
+        linkToAdd.thumbnail = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
       } catch {
-        newLink.thumbnail = "/placeholder-image.png";
+        linkToAdd.thumbnail = "/placeholder-image.png";
       }
     }
-    const linkToAdd = { ...newLink, id: Date.now() };
+
     setLinks(prev => [...prev, linkToAdd]);
     setIsAddLinkModalOpen(false);
+  };
+
+  // Handle importing bookmarks
+  const handleImportBookmarks = (bookmarks) => {
+    // Add new bookmarks to existing links
+    setLinks(prevLinks => {
+      // Ensure each bookmark has a unique ID
+      const processedBookmarks = bookmarks.map(bookmark => ({
+        ...bookmark,
+        id: `bookmark_${bookmark.name}_${bookmark.link}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      }));
+
+      // Filter out duplicate bookmarks based on URL
+      const newBookmarks = processedBookmarks.filter(newBookmark => 
+        !prevLinks.some(existingLink => existingLink.link === newBookmark.link)
+      );
+
+      return [...prevLinks, ...newBookmarks];
+    });
+    
+    // Create a notification
+    if (bookmarks.length > 0) {
+      const message = `Successfully imported ${bookmarks.length} bookmarks!`;
+      alert(message);
+    }
   };
 
   // Handle category updates
@@ -113,7 +144,7 @@ export default function LibraryPage() {
     }
   };
 
-  // Select or deselect all links on the current page
+  // Select or deselect all visible links
   const selectAllLinks = () => {
     if (selectedLinks.size === paginatedLinks.length) {
       setSelectedLinks(new Set());
@@ -122,18 +153,22 @@ export default function LibraryPage() {
     }
   };
 
-  // Open edit modal for a link
+  // Edit link
   const handleEditLink = (link) => {
     setEditingLink(link);
   };
 
-  // Save updates from the edit modal
+  // Save updated link
   const handleSaveLink = (updatedLink) => {
     const updatedLinks = links.map(link =>
       link.id === updatedLink.id ? updatedLink : link
     );
     setLinks(updatedLinks);
     setEditingLink(null);
+  };
+
+  const handleSyncBookmarks = () => {
+    setIsBookmarksSyncModalOpen(true);
   };
 
   return (
@@ -165,6 +200,7 @@ export default function LibraryPage() {
           selectedLinks={selectedLinks}
           onSelectAll={selectAllLinks}
           onDeleteSelected={handleDeleteSelected}
+          onSyncBookmarks={handleSyncBookmarks}
         />
 
         <LinkGrid
@@ -208,6 +244,12 @@ export default function LibraryPage() {
             categories={categories}
           />
         )}
+
+        <BookmarksSyncModal
+          isOpen={isBookmarksSyncModalOpen}
+          onClose={() => setIsBookmarksSyncModalOpen(false)}
+          onImport={handleImportBookmarks}
+        />
       </div>
     </>
   );

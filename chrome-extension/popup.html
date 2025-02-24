@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Broccoli Bookmarks Sync</title>
+  <style>
+    body {
+      width: 300px;
+      padding: 16px;
+      font-family: system-ui;
+      background: #000;
+      color: #4ade80;
+    }
+    button {
+      width: 100%;
+      padding: 8px;
+      background: #15803d;
+      color: white;
+      border: 1px solid #16a34a;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 12px;
+    }
+    button:hover {
+      background: #16a34a;
+    }
+    .status {
+      margin-top: 12px;
+      padding: 8px;
+      border-radius: 4px;
+      text-align: center;
+      display: none;
+    }
+    .success {
+      background: rgba(22, 163, 74, 0.2);
+      border: 1px solid #16a34a;
+    }
+    .error {
+      background: rgba(220, 38, 38, 0.2);
+      border: 1px solid #dc2626;
+      color: #fca5a5;
+    }
+  </style>
+</head>
+<body>
+  <h2>Broccoli Bookmarks Sync</h2>
+  <p>Click below to sync your bookmarks with Broccoli Github Creator</p>
+  <button id="syncButton">Sync Bookmarks</button>
+  <div id="status" class="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

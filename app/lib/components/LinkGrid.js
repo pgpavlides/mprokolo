@@ -1,22 +1,36 @@
-// app/lib/components/LinkGrid.js
+// File path: app/lib/components/LinkGrid.js
+
 import LinkCard from './LinkCard';
 import { CheckSquare } from 'lucide-react';
 
 const LinkGrid = ({ links, editMode, selectedLinks, onLinkSelect, onEditLink }) => {
+  // Generate a unique ID if none exists
+  const ensureUniqueId = (link) => {
+    if (!link.id || typeof link.id === 'number') {
+      return {
+        ...link,
+        id: `link_${link.name}_${link.link}_${Date.now()}`
+      };
+    }
+    return link;
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto mb-8">
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {links.map((link) => {
-          const isSelected = editMode && selectedLinks.has(link.id);
+          const linkWithId = ensureUniqueId(link);
+          const isSelected = editMode && selectedLinks.has(linkWithId.id);
+          
           return (
             <div
-              key={link.id}
-              onClick={() => onLinkSelect(link.id)}
+              key={linkWithId.id}
+              onClick={() => onLinkSelect(linkWithId.id)}
               className={`relative cursor-pointer transition-transform duration-200 ${
                 isSelected ? 'scale-95' : ''
               }`}
             >
-              <LinkCard link={link} editMode={editMode} onEdit={onEditLink} />
+              <LinkCard link={linkWithId} editMode={editMode} onEdit={onEditLink} />
               {isSelected && (
                 <>
                   <div className="absolute inset-0 bg-green-500/30 pointer-events-none"></div>

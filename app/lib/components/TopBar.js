@@ -1,6 +1,8 @@
+// File path: app/lib/components/TopBar.js
+
 import SearchBar from './SearchBar';
 import CategorySelect from './CategorySelect';
-import { Plus, Settings, Edit2, Trash2, CheckSquare } from 'lucide-react';
+import { Plus, Settings, Edit2, Trash2, CheckSquare, BookmarkIcon } from 'lucide-react';
 
 const TopBar = ({ 
   searchTerm, 
@@ -14,7 +16,8 @@ const TopBar = ({
   onEditModeToggle,
   selectedLinks,
   onSelectAll,
-  onDeleteSelected
+  onDeleteSelected,
+  onSyncBookmarks
 }) => {
   return (
     <div className="w-full max-w-6xl mx-auto mb-8">
@@ -44,6 +47,14 @@ const TopBar = ({
             title="Manage categories"
           >
             <Settings className="w-5 h-5" />
+          </button>
+          <button
+            onClick={onSyncBookmarks}
+            className="p-2 bg-green-900/30 border border-green-800 text-green-400 rounded-lg hover:border-green-400 transition-colors flex items-center gap-2"
+            title="Sync Chrome Bookmarks"
+          >
+            <BookmarkIcon className="w-5 h-5" />
+            <span className="hidden sm:inline">Sync Bookmarks</span>
           </button>
           <button
             onClick={onEditModeToggle}
