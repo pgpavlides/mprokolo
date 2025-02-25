@@ -1,14 +1,54 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Info } from 'lucide-react';
 import MatrixRain from '@/components/MatrixRain';
 
-export default function ToolsPage() {
-  // Code snippet for the 3D DOM Viewer tool
-  const viewerCode = `
+// A simple modal component
+function InfoModal({ isOpen, onClose, title, children }) {
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    }
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 flex items-center justify-center z-50">
+      {/* Modal overlay */}
+      <div className="absolute inset-0 bg-black opacity-50" onClick={onClose}></div>
+      {/* Modal content */}
+      <div className="bg-gray-900 p-6 rounded-lg relative z-10 max-w-md mx-auto">
+        <h2 className="text-xl font-bold mb-4 text-green-400">{title}</h2>
+        <div className="text-green-200">{children}</div>
+        <button
+          onClick={onClose}
+          className="mt-4 px-3 py-1 bg-green-700 text-green-200 rounded hover:bg-green-600 transition-colors"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  );
+}
+
+export default function ToolsPage() {
+  // Two state variables to control each modal
+  const [viewerModalOpen, setViewerModalOpen] = useState(false);
+  const [visualizeModalOpen, setVisualizeModalOpen] = useState(false);
+
+  // Code snippet for the 3D DOM Viewer tool (all ${...} have been escaped)
+  const viewerCode = `// 3D Dom viewer, copy-paste this into your console to visualise the DOM as a stack of solid blocks.
+// You can also minify and save it as a bookmarklet (https://www.freecodecamp.org/news/what-are-bookmarklets/)
 (() => {
   const SHOW_SIDES = false; // color sides of DOM nodes?
   const COLOR_SURFACE = true; // color tops of DOM nodes?
@@ -22,14 +62,14 @@ export default function ToolsPage() {
     const hue = Math.floor(Math.random() * 360);
     const saturation = 50 + Math.floor(Math.random() * 30);
     const lightness = 40 + Math.floor(Math.random() * 30);
-    return \`hsl(\${hue}, \${saturation}%, \${lightness}%)\`;
+    return \`hsl(\\\${hue}, \\\${saturation}%, \\\${lightness}%)\`;
   }
 
   const getDOMDepth = element =>
     [...element.children].reduce((max, child) => Math.max(max, getDOMDepth(child)), 0) + 1;
   const domDepthCache = getDOMDepth(document.body);
   const getColorByDepth = (depth, hue = 0, lighten = 0) =>
-    \`hsl(\${hue}, 75%, \${Math.min(10 + depth * (1 + 60 / domDepthCache), 90) + lighten}%)\`;
+    \`hsl(\\\${hue}, 75%, \\\${Math.min(10 + depth * (1 + 60 / domDepthCache), 90) + lighten}%)\`;
 
   // Apply initial styles to the body to enable 3D perspective
   const body = document.body;
@@ -38,13 +78,13 @@ export default function ToolsPage() {
   body.style.perspective = DISTANCE;
   const perspectiveOriginX = window.innerWidth / 2;
   const perspectiveOriginY = window.innerHeight / 2;
-  body.style.perspectiveOrigin = body.style.transformOrigin = \`\${perspectiveOriginX}px \${perspectiveOriginY}px\`;
+  body.style.perspectiveOrigin = body.style.transformOrigin = \`\\\${perspectiveOriginX}px \\\${perspectiveOriginY}px\`;
   traverseDOM(body, 0, 0, 0);
 
   document.addEventListener("mousemove", (event) => {
     const rotationY = MAX_ROTATION * (1 - event.clientY / window.innerHeight) - (MAX_ROTATION / 2);
     const rotationX = MAX_ROTATION * event.clientX / window.innerWidth - (MAX_ROTATION / 2);
-    body.style.transform = \`rotateX(\${rotationY}deg) rotateY(\${rotationX}deg)\`;
+    body.style.transform = \`rotateX(\\\${rotationY}deg) rotateY(\\\${rotationX}deg)\`;
   });
 
   // Create side faces for an element to give it a 3D appearance
@@ -62,8 +102,8 @@ export default function ToolsPage() {
         transformStyle: "preserve-3d",
         backfaceVisibility: 'hidden',
         position: 'absolute',
-        width: \`\${width}px\`,
-        height: \`\${height}px\`,
+        width: \`\\\${width}px\`,
+        height: \`\\\${height}px\`,
         background: color,
         transform,
         transformOrigin,
@@ -81,7 +121,7 @@ export default function ToolsPage() {
     createFace({
       width,
       height: THICKNESS,
-      transform: \`rotateX(-270deg) translateY(${-THICKNESS}px)\`,
+      transform: \`rotateX(-270deg) translateY(-\\\${THICKNESS}px)\`,
       transformOrigin: 'top',
       top: '0px',
       left: '0px',
@@ -94,14 +134,14 @@ export default function ToolsPage() {
       transform: 'rotateY(90deg)',
       transformOrigin: 'left',
       top: '0px',
-      left: \`\${width}px\`
+      left: \`\\\${width}px\`
     });
 
     // Bottom face
     createFace({
       width,
       height: THICKNESS,
-      transform: \`rotateX(-90deg) translateY(\${THICKNESS}px)\`,
+      transform: \`rotateX(-90deg) translateY(\\\${THICKNESS}px)\`,
       transformOrigin: 'bottom',
       bottom: '0px',
       left: '0px'
@@ -111,7 +151,7 @@ export default function ToolsPage() {
     createFace({
       width: THICKNESS,
       height,
-      transform: \`translateX(${-THICKNESS}px) rotateY(-90deg)\`,
+      transform: \`translateX(-\\\${THICKNESS}px) rotateY(-90deg)\`,
       transformOrigin: 'right',
       top: '0px',
       left: '0px'
@@ -127,7 +167,7 @@ export default function ToolsPage() {
       if (!(childNode.nodeType === 1 && !childNode.classList.contains('dom-3d-side-face'))) continue;
       const color = COLOR_RANDOM ? getRandomColor() : getColorByDepth(depthLevel, COLOR_HUE, -5);
       Object.assign(childNode.style, {
-        transform: \`translateZ(\${THICKNESS}px)\`,
+        transform: \`translateZ(\\\${THICKNESS}px)\`,
         overflow: "visible",
         backfaceVisibility: "hidden",
         isolation: "auto",
@@ -149,7 +189,7 @@ export default function ToolsPage() {
 })()`;
 
   // Code snippet for the DOM 3D Visualize tool
-  const visualizeCode = `
+  const visualizeCode = `//Credits: https://gist.github.com/OrionReed/4c3778ebc2b5026d2354359ca49077ca
 
 (() => {
   const THICKNESS = 5;
@@ -162,15 +202,15 @@ export default function ToolsPage() {
   const body = document.body;
   body.style.overflow = "visible";
   body.style.transformStyle = "preserve-3d";
-  body.style.perspective = \`\${DISTANCE}px\`;
+  body.style.perspective = \`\\\${DISTANCE}px\`;
   const perspectiveOriginX = window.innerWidth / 2;
   const perspectiveOriginY = window.innerHeight / 2;
-  body.style.perspectiveOrigin = body.style.transformOrigin = \`\${perspectiveOriginX}px \${perspectiveOriginY}px\`;
+  body.style.perspectiveOrigin = body.style.transformOrigin = \`\\\${perspectiveOriginX}px \\\${perspectiveOriginY}px\`;
 
   document.addEventListener("mousemove", (event) => {
     const rotationY = MAX_ROTATION * (1 - event.clientY / window.innerHeight) - (MAX_ROTATION / 2);
     const rotationX = MAX_ROTATION * event.clientX / window.innerWidth - (MAX_ROTATION / 2);
-    body.style.transform = \`rotateX(\${rotationY}deg) rotateY(\${rotationX}deg)\`;
+    body.style.transform = \`rotateX(\\\${rotationY}deg) rotateY(\\\${rotationX}deg)\`;
   });
 
   function traverseDOM(parentNode, depthLevel) {
@@ -179,7 +219,7 @@ export default function ToolsPage() {
       if (childNode.nodeType !== 1) continue;
 
       Object.assign(childNode.style, {
-        transform: \`translateZ(\${THICKNESS * depthLevel}px)\`,
+        transform: \`translateZ(\\\${THICKNESS * depthLevel}px)\`,
         overflow: "visible",
         backfaceVisibility: "hidden",
         transformStyle: "preserve-3d",
@@ -194,7 +234,7 @@ export default function ToolsPage() {
   traverseDOM(body, 0);
 })();`;
 
-  // Function to copy text to clipboard
+  // Function to copy text to the clipboard
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
@@ -227,7 +267,15 @@ export default function ToolsPage() {
             {/* Tools Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* 3D DOM Viewer Tool Card */}
-              <div className="border border-green-800 rounded-lg p-6 hover:border-green-400 transition-colors bg-black/50 backdrop-blur-sm">
+              <div className="relative border border-green-800 rounded-lg p-6 hover:border-green-400 transition-colors bg-black/50 backdrop-blur-sm">
+                {/* Info icon */}
+                <button
+                  onClick={() => setViewerModalOpen(true)}
+                  className="absolute top-2 right-2 text-green-400 hover:text-green-300"
+                  aria-label="How to use 3D DOM Viewer"
+                >
+                  <Info className="w-5 h-5" />
+                </button>
                 <h2 className="text-lg font-semibold text-green-400 mb-2">3D DOM Viewer</h2>
                 <button
                   onClick={() => copyToClipboard(viewerCode)}
@@ -235,13 +283,21 @@ export default function ToolsPage() {
                 >
                   Copy Code
                 </button>
-                <pre className="text-green-600 text-sm overflow-auto whitespace-pre-wrap">
+                <pre className="text-green-600 text-xs overflow-auto whitespace-pre-wrap">
                   {viewerCode}
                 </pre>
               </div>
 
               {/* DOM 3D Visualize Tool Card */}
-              <div className="border border-green-800 rounded-lg p-6 hover:border-green-400 transition-colors bg-black/50 backdrop-blur-sm">
+              <div className="relative border border-green-800 rounded-lg p-6 hover:border-green-400 transition-colors bg-black/50 backdrop-blur-sm">
+                {/* Info icon */}
+                <button
+                  onClick={() => setVisualizeModalOpen(true)}
+                  className="absolute top-2 right-2 text-green-400 hover:text-green-300"
+                  aria-label="How to use DOM 3D Visualize"
+                >
+                  <Info className="w-5 h-5" />
+                </button>
                 <h2 className="text-lg font-semibold text-green-400 mb-2">DOM 3D Visualize</h2>
                 <button
                   onClick={() => copyToClipboard(visualizeCode)}
@@ -249,7 +305,7 @@ export default function ToolsPage() {
                 >
                   Copy Code
                 </button>
-                <pre className="text-green-600 text-sm overflow-auto whitespace-pre-wrap">
+                <pre className="text-green-600 text-xs overflow-auto whitespace-pre-wrap">
                   {visualizeCode}
                 </pre>
               </div>
@@ -257,6 +313,28 @@ export default function ToolsPage() {
           </div>
         </div>
       </div>
+
+      {/* Info modals */}
+      <InfoModal
+        isOpen={viewerModalOpen}
+        onClose={() => setViewerModalOpen(false)}
+        title="3D DOM Viewer - How to Use"
+      >
+        <p>
+          Copy the code and paste it into your browser console on any webpage. It will visualize the DOM as a
+          stack of 3D blocks.
+        </p>
+      </InfoModal>
+      <InfoModal
+        isOpen={visualizeModalOpen}
+        onClose={() => setVisualizeModalOpen(false)}
+        title="DOM 3D Visualize - How to Use"
+      >
+        <p>
+          Copy the code and paste it into your browser console. This snippet applies a 3D transformation to the
+          DOM for a cool visual effect.
+        </p>
+      </InfoModal>
     </>
   );
 }
