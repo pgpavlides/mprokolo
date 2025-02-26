@@ -1,4 +1,4 @@
-// app/lib/utils/imageCache.js
+// File: app/lib/utils/imageCache.js
 
 const IMAGE_CACHE_KEY = 'mprokolo-image-cache';
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
@@ -115,5 +115,16 @@ export const trimCache = () => {
     console.error('Error trimming cache:', error);
     // If all else fails, just clear the entire cache
     localStorage.removeItem(IMAGE_CACHE_KEY);
+  }
+};
+
+// New helper function to generate a favicon URL using the new endpoint
+export const getFaviconUrl = (linkUrl) => {
+  try {
+    const { hostname } = new URL(linkUrl);
+    return `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
+  } catch (error) {
+    console.error('Error generating favicon URL:', error);
+    return '/globe.svg';
   }
 };

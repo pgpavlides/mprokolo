@@ -1,7 +1,7 @@
-// app/lib/components/LinkCard.js
+// File: app/lib/components/LinkCard.js
 import { useState, useEffect } from 'react';
 import { Settings, Image as ImageIcon, ExternalLink } from 'lucide-react';
-import { getCachedImage, setCachedImage } from '../utils/imageCache';
+import { getCachedImage, setCachedImage, getFaviconUrl } from '../utils/imageCache';
 
 const LinkCard = ({ link, editMode, onEdit, tabIndex }) => {
   const [previewImage, setPreviewImage] = useState(null);
@@ -38,14 +38,8 @@ const LinkCard = ({ link, editMode, onEdit, tabIndex }) => {
           return;
         }
 
-        // Create fallback image URL from domain favicon
-        let fallbackImage;
-        try {
-          const url = new URL(link.link);
-          fallbackImage = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
-        } catch (urlError) {
-          fallbackImage = '/globe.svg'; // Use local fallback if URL is invalid
-        }
+        // Create fallback image URL using getFaviconUrl helper
+        const fallbackImage = getFaviconUrl(link.link);
 
         // Try to fetch from API
         try {
@@ -72,13 +66,7 @@ const LinkCard = ({ link, editMode, onEdit, tabIndex }) => {
         console.error('Error loading preview:', error);
         if (isMounted) {
           setImageError(true);
-          let fallbackImage = '/globe.svg';
-          try {
-            const url = new URL(link.link);
-            fallbackImage = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
-          } catch (e) {
-            // Keep default fallback
-          }
+          const fallbackImage = getFaviconUrl(link.link);
           setPreviewImage(fallbackImage);
           setCachedImage(link.link, fallbackImage);
         }
@@ -143,13 +131,7 @@ const LinkCard = ({ link, editMode, onEdit, tabIndex }) => {
                   className="max-w-full max-h-full object-contain"
                   onError={() => {
                     setImageError(true);
-                    let fallbackImage = '/globe.svg';
-                    try {
-                      const url = new URL(link.link);
-                      fallbackImage = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
-                    } catch (e) {
-                      // Keep default fallback
-                    }
+                    const fallbackImage = getFaviconUrl(link.link);
                     setPreviewImage(fallbackImage);
                     setCachedImage(link.link, fallbackImage);
                   }}

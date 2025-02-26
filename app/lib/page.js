@@ -57,7 +57,6 @@ export default function LibraryPage() {
       return;
     }
 
-    console.log('Updating categories directly:', newCategories);
     
     // Process to ensure categories have the required format and unique IDs
     const processedCategories = newCategories.map(cat => ({
@@ -80,7 +79,6 @@ export default function LibraryPage() {
     // Save to localStorage immediately to ensure persistence
     setTimeout(() => {
       const updatedCategories = JSON.parse(localStorage.getItem("mprokolo-library-categories") || '[]');
-      console.log('Categories saved to localStorage:', updatedCategories);
     }, 100);
   };
 
@@ -181,7 +179,6 @@ export default function LibraryPage() {
         if (activePage > 1) {
           // Direct state update for reliable navigation
           setActivePage(prev => Math.max(1, prev - 1));
-          console.log(`Navigating to previous page: ${activePage - 1} in ${viewMode} view`);
         }
       }
 
@@ -191,7 +188,6 @@ export default function LibraryPage() {
         if (activePage < totalPages) {
           // Direct state update for reliable navigation
           setActivePage(prev => Math.min(totalPages, prev + 1));
-          console.log(`Navigating to next page: ${activePage + 1} in ${viewMode} view`);
         }
       }
     };
@@ -212,7 +208,6 @@ export default function LibraryPage() {
 
   // Debugging total pages
   useEffect(() => {
-    console.log(`${viewMode} view - Total pages: ${totalPages}, Current page: ${activePage}`);
   }, [totalPages, activePage, viewMode]);
 
   // Save viewMode preference

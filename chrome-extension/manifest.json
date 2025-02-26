@@ -1,35 +1,36 @@
 {
-    "manifest_version": 3,
-    "name": "Broccoli Bookmarks Sync",
-    "version": "1.0",
-    "description": "Sync Chrome bookmarks with Broccoli Github Creator",
-    "permissions": [
-      "bookmarks",
-      "tabs",
-      "activeTab"
-    ],
-    "host_permissions": [
-      "http://localhost:3000/*",
-      "https://mprokolo.gr/*"
-    ],
-    "background": {
-      "service_worker": "background.js",
-      "type": "module"
-    },
-    "action": {
-      "default_popup": "popup.html",
-      "default_icon": {
-        "16": "icon16.svg",
-        "48": "icon48.svg",
-        "128": "icon128.svg"
-      }
-    },
-    "content_scripts": [{
+  "manifest_version": 3,
+  "name": "Broccoli Extension",
+  "version": "1.0.0",
+  "description": "Chrome extension for bookmark sync and import.",
+  "permissions": [
+    "bookmarks",
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://mprokolo.gr/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
       "matches": [
         "http://localhost:3000/*",
         "https://mprokolo.gr/*"
       ],
-      "js": ["content.js"]
-    }]
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.svg",
+      "48": "icon48.svg",
+      "128": "icon128.svg"
+    }
   }
-  
+}

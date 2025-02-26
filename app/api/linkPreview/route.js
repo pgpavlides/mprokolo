@@ -54,7 +54,7 @@ export async function GET(request) {
     if (!response || !response.ok) {
       // Return favicon as fallback
       return NextResponse.json({ 
-        image: `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`,
+        image: `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`,
         hostname,
         fallback: true
       }, { status: 200 });
@@ -129,7 +129,7 @@ export async function GET(request) {
 
     // If still no image, use favicon as last resort
     if (!imageUrl) {
-      imageUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
+      imageUrl = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
     }
 
     return NextResponse.json({ 
@@ -149,7 +149,7 @@ export async function GET(request) {
 
     // Return favicon as fallback in case of error
     return NextResponse.json({ 
-      image: `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`,
+      image: `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`,
       hostname,
       fallback: true
     }, { status: 200 }); 
