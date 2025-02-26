@@ -82,7 +82,7 @@ const GithubLogin = () => {
 
         {/* Version Number */}
         <div className="absolute bottom-4 text-green-700 text-sm animate-fade-in-delayed z-10">
-          Version 0.5.0 🥦
+          Version 0.5.1 🥦
         </div>
       </div>
     </>
