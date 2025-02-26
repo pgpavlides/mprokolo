@@ -265,7 +265,7 @@ const BookmarksSyncModal = ({ isOpen, onClose, onImport, onCategoriesUpdate }) =
                 <div>
                   <p className="text-green-400 mb-2">Extension not detected. To install:</p>
                   <ol className="list-decimal ml-4 text-green-600">
-                    <li>Download Extension from <a className='text-red-500 hover:text-xl' href='https://drive.google.com/file/d/1GwuBVLaei2AMosUPKyYW6Ci2XsBWpimR/view?usp=sharing'> HERE </a></li>
+                    <li>Download Extension from <a className='text-red-500 hover:text-xl' href='https://drive.google.com/drive/folders/1rGcIy3pRlj671Izg7HcIw5oJGBSE_-ny?usp=sharing'> HERE </a></li>
                     <li>Extract the .zip</li>
                     <li>Open Chrome Extensions (chrome://extensions)</li>
                     <li>Enable "Developer mode" (top right)</li>
