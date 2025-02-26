@@ -1,6 +1,7 @@
+// app/lib/components/Pagination.js
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const Pagination = ({ currentPage, totalPages, onPageChange }) => {
+const Pagination = ({ currentPage, totalPages, onPageChange, tabIndex }) => {
   return (
     <div className="w-full max-w-6xl mx-auto flex justify-center items-center gap-4">
       <button
@@ -10,6 +11,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                  disabled:opacity-50 disabled:cursor-not-allowed hover:border-green-400 
                  transition-colors"
         title="Previous page"
+        tabIndex={tabIndex || 0}
       >
         <ChevronLeft className="w-5 h-5" />
       </button>
@@ -25,6 +27,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => {
                  disabled:opacity-50 disabled:cursor-not-allowed hover:border-green-400 
                  transition-colors"
         title="Next page"
+        tabIndex={tabIndex || 0}
       >
         <ChevronRight className="w-5 h-5" />
       </button>

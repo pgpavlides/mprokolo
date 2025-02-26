@@ -1,3 +1,4 @@
+// app/api/linkPreview/route.js
 import { NextResponse } from 'next/server';
 import { parse } from 'node-html-parser';
 
@@ -7,11 +8,15 @@ function resolveUrl(baseUrl, relativeUrl) {
   if (relativeUrl.startsWith('http')) return relativeUrl;
   if (relativeUrl.startsWith('//')) return `https:${relativeUrl}`;
   
-  const base = new URL(baseUrl);
-  if (relativeUrl.startsWith('/')) {
-    return `${base.protocol}//${base.host}${relativeUrl}`;
+  try {
+    const base = new URL(baseUrl);
+    if (relativeUrl.startsWith('/')) {
+      return `${base.protocol}//${base.host}${relativeUrl}`;
+    }
+    return `${base.protocol}//${base.host}/${relativeUrl}`;
+  } catch (error) {
+    return null;
   }
-  return `${base.protocol}//${base.host}/${relativeUrl}`;
 }
 
 export async function GET(request) {
@@ -23,12 +28,37 @@ export async function GET(request) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
+    let hostname;
+    try {
+      hostname = new URL(url).hostname;
+    } catch (error) {
+      return NextResponse.json({ 
+        image: '/globe.svg',
+        hostname: 'unknown',
+        fallback: true
+      }, { status: 200 });
+    }
+
     // Add a user agent to avoid being blocked
     const response = await fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-      }
+      },
+      // Add timeout to prevent hanging requests
+      signal: AbortSignal.timeout(5000)
+    }).catch(error => {
+      console.error('Fetch error:', error);
+      return null;
     });
+
+    if (!response || !response.ok) {
+      // Return favicon as fallback
+      return NextResponse.json({ 
+        image: `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`,
+        hostname,
+        fallback: true
+      }, { status: 200 });
+    }
 
     const html = await response.text();
     
@@ -92,23 +122,6 @@ export async function GET(request) {
       }
     }
 
-    // Try preview service if no image found
-    if (!imageUrl) {
-      try {
-        const previewResponse = await fetch(
-          `https://api.microlink.io/?url=${encodeURIComponent(url)}`
-        );
-        if (previewResponse.ok) {
-          const previewData = await previewResponse.json();
-          if (previewData.data?.image?.url) {
-            imageUrl = previewData.data.image.url;
-          }
-        }
-      } catch (error) {
-        console.log('Preview service failed, continuing with fallback...');
-      }
-    }
-
     // Make relative URLs absolute
     if (imageUrl) {
       imageUrl = resolveUrl(url, imageUrl);
@@ -116,22 +129,29 @@ export async function GET(request) {
 
     // If still no image, use favicon as last resort
     if (!imageUrl) {
-      imageUrl = `https://www.google.com/s2/favicons?domain=${new URL(url).hostname}&sz=128`;
+      imageUrl = `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
     }
 
     return NextResponse.json({ 
       image: imageUrl,
-      hostname: new URL(url).hostname
+      hostname
     });
 
   } catch (error) {
     console.error('Error fetching link preview:', error);
+    // Get hostname from URL if possible
+    let hostname = 'unknown';
+    try {
+      hostname = new URL(url).hostname;
+    } catch (error) {
+      // URL might be invalid
+    }
+
     // Return favicon as fallback in case of error
-    const hostname = new URL(url).hostname;
     return NextResponse.json({ 
       image: `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`,
-      hostname: hostname,
+      hostname,
       fallback: true
-    }, { status: 200 }); // Still return 200 with fallback image
+    }, { status: 200 }); 
   }
 }

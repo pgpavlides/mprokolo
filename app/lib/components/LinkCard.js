@@ -1,12 +1,13 @@
 // app/lib/components/LinkCard.js
 import { useState, useEffect } from 'react';
-import { Settings, Image as ImageIcon } from 'lucide-react';
+import { Settings, Image as ImageIcon, ExternalLink } from 'lucide-react';
 import { getCachedImage, setCachedImage } from '../utils/imageCache';
 
-const LinkCard = ({ link, editMode, onEdit }) => {
+const LinkCard = ({ link, editMode, onEdit, tabIndex }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isFocused, setIsFocused] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -18,7 +19,16 @@ const LinkCard = ({ link, editMode, onEdit }) => {
       }
 
       try {
-        // First check cache
+        // Try to use the thumbnail if provided directly
+        if (link.thumbnail) {
+          if (isMounted) {
+            setPreviewImage(link.thumbnail);
+            setIsLoading(false);
+          }
+          return;
+        }
+
+        // Check cache next
         const cachedImage = getCachedImage(link.link);
         if (cachedImage) {
           if (isMounted) {
@@ -28,30 +38,54 @@ const LinkCard = ({ link, editMode, onEdit }) => {
           return;
         }
 
-        // If not in cache, fetch from API
-        const response = await fetch(`/api/linkPreview?url=${encodeURIComponent(link.link)}`);
-        if (!response.ok) throw new Error('Failed to fetch preview');
-        
-        const data = await response.json();
-        
-        if (isMounted && data.image) {
-          setPreviewImage(data.image);
-          // Cache the image URL
-          setCachedImage(link.link, data.image);
+        // Create fallback image URL from domain favicon
+        let fallbackImage;
+        try {
+          const url = new URL(link.link);
+          fallbackImage = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
+        } catch (urlError) {
+          fallbackImage = '/globe.svg'; // Use local fallback if URL is invalid
+        }
+
+        // Try to fetch from API
+        try {
+          const response = await fetch(`/api/linkPreview?url=${encodeURIComponent(link.link)}`);
+          if (!response.ok) throw new Error('Failed to fetch preview');
+          
+          const data = await response.json();
+          
+          if (isMounted && data.image) {
+            setPreviewImage(data.image);
+            // Cache the image URL
+            setCachedImage(link.link, data.image);
+          } else {
+            throw new Error('No image in response');
+          }
+        } catch (apiError) {
+          console.warn('API fetch error, using fallback:', apiError);
+          if (isMounted) {
+            setPreviewImage(fallbackImage);
+            setCachedImage(link.link, fallbackImage);
+          }
         }
       } catch (error) {
-        console.error('Error fetching preview:', error);
+        console.error('Error loading preview:', error);
         if (isMounted) {
           setImageError(true);
-          const fallbackImage = `https://www.google.com/s2/favicons?domain=${new URL(link.link).hostname}&sz=128`;
+          let fallbackImage = '/globe.svg';
+          try {
+            const url = new URL(link.link);
+            fallbackImage = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
+          } catch (e) {
+            // Keep default fallback
+          }
           setPreviewImage(fallbackImage);
-          // Cache the fallback image
           setCachedImage(link.link, fallbackImage);
         }
       } finally {
         if (isMounted) {
           // Keep loading state for a minimum time to avoid flashing
-          setTimeout(() => setIsLoading(false), 500);
+          setTimeout(() => setIsLoading(false), 300);
         }
       }
     };
@@ -62,19 +96,36 @@ const LinkCard = ({ link, editMode, onEdit }) => {
     return () => {
       isMounted = false;
     };
-  }, [link.link, imageError]);
+  }, [link.link, link.thumbnail, imageError]);
 
   const categoryName =
     typeof link.category === 'string'
       ? link.category
       : link.category?.name || 'Uncategorized';
 
+  // Handle keyboard navigation
+  const handleKeyDown = (e) => {
+    if (editMode) return;
+    
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      window.open(link.link, "_blank");
+    }
+  };
+
   return (
     <div
-      className="relative h-48 bg-black border border-green-800 rounded-lg overflow-hidden group cursor-pointer flex flex-col"
+      className={`relative h-48 bg-black border rounded-lg overflow-hidden group cursor-pointer flex flex-col
+                ${isFocused ? 'border-green-400 ring-2 ring-green-500/50' : 'border-green-800'}`}
       onClick={() => {
         if (!editMode) window.open(link.link, "_blank");
       }}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      tabIndex={tabIndex || 0}
+      role="link"
+      aria-label={`${link.name} - ${categoryName}`}
+      onKeyDown={handleKeyDown}
     >
       {/* Top section: Image container */}
       <div className="relative h-32 overflow-hidden bg-black flex items-center justify-center">
@@ -92,7 +143,13 @@ const LinkCard = ({ link, editMode, onEdit }) => {
                   className="max-w-full max-h-full object-contain"
                   onError={() => {
                     setImageError(true);
-                    const fallbackImage = `https://www.google.com/s2/favicons?domain=${new URL(link.link).hostname}&sz=128`;
+                    let fallbackImage = '/globe.svg';
+                    try {
+                      const url = new URL(link.link);
+                      fallbackImage = `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
+                    } catch (e) {
+                      // Keep default fallback
+                    }
                     setPreviewImage(fallbackImage);
                     setCachedImage(link.link, fallbackImage);
                   }}
@@ -119,8 +176,12 @@ const LinkCard = ({ link, editMode, onEdit }) => {
           </button>
         )}
 
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 flex items-center justify-center">
-          <span className="text-white text-sm">Open Link</span>
+        <div className={`absolute inset-0 transition-opacity bg-black/50 flex items-center justify-center
+                       ${(isFocused || link.isFocused) ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+          <span className="text-white text-sm flex items-center gap-1">
+            <ExternalLink className="w-4 h-4" />
+            Open Link
+          </span>
         </div>
       </div>
 

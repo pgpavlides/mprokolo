@@ -41,5 +41,10 @@ export const availableIcons = {
 
 export const renderIcon = (iconName) => {
   const IconComponent = availableIcons[iconName] || availableIcons.folder;
-  return <IconComponent />;
+  // Return a larger icon in a flex container to ensure proper centering
+  return (
+    <div className="flex items-center justify-center w-full h-full">
+      <IconComponent style={{ fontSize: '2.5rem' }} /> {/* Increase icon size */}
+    </div>
+  );
 };

@@ -16,7 +16,7 @@ export default function Logo() {
           />
         </div>
       </div>
-      <span className="text-5xl font-bold tracking-wider text-green-400 mt-10">Broccoli Github Creator</span>
+      <span className="text-7xl font-bold  text-green-500 mt-10">Green Coder</span>
     </div>
   );
 }

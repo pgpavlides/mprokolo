@@ -98,7 +98,7 @@ export default function Home() {
               <div className="absolute -inset-1 bg-green-500/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               <div className="relative flex flex-col items-center gap-3">
                 <Library className="w-10 h-10 text-green-500" />
-                <span className="text-green-400 font-medium">Lib</span>
+                <span className="text-green-400 font-medium">Bookmarks</span>
               </div>
             </Link>
 
@@ -130,7 +130,7 @@ export default function Home() {
 
         {/* Version Number */}
         <div className="absolute bottom-4 text-green-700 text-sm animate-fade-in-delayed">
-          Version 0.4.0 🥦
+          Version 0.5.0 🥦
         </div>
       </div>
     </>

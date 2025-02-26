@@ -1,49 +1,113 @@
+// app/lib/components/BookmarksSyncModal.js
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Chrome, FileDown, AlertTriangle } from 'lucide-react';
+import { X, Upload, Chrome, FileDown, AlertTriangle, RefreshCw } from 'lucide-react';
 import ImportBookmarksModal from './ImportBookmarksModal';
 
-const BookmarksSyncModal = ({ isOpen, onClose, onImport }) => {
+const BookmarksSyncModal = ({ isOpen, onClose, onImport, onCategoriesUpdate }) => {
   const [method, setMethod] = useState(null);
   const [showImportModal, setShowImportModal] = useState(false);
   const [extensionDetected, setExtensionDetected] = useState(false);
   const [debugMessage, setDebugMessage] = useState('');
+  const [isCheckingExtension, setIsCheckingExtension] = useState(false);
+  const [checkAttempts, setCheckAttempts] = useState(0);
+
+  // Function to check for extension with multiple communication methods
+  const checkForExtension = () => {
+    setIsCheckingExtension(true);
+    setDebugMessage('Checking for extension...');
+    setCheckAttempts(prev => prev + 1);
+    
+    // Multiple communication methods
+    const checkMethods = [
+      // Method 1: Window postMessage
+      () => window.postMessage({ 
+        type: 'CHECK_EXTENSION',
+        timestamp: Date.now(),
+        attempt: checkAttempts + 1
+      }, '*'),
+      
+      // Method 2: Custom document event
+      () => {
+        try {
+          document.dispatchEvent(new CustomEvent('CHECK_BROCCOLI_EXTENSION', { 
+            detail: { timestamp: Date.now() } 
+          }));
+        } catch (e) {
+          // Silently catch any errors
+        }
+      },
+      
+      // Method 3: Chrome runtime message (if available)
+      () => {
+        if (window.chrome && window.chrome.runtime && window.chrome.runtime.sendMessage) {
+          try {
+            window.chrome.runtime.sendMessage({ type: 'CHECK_EXTENSION' }, (response) => {
+              if (response && response.status === 'ok') {
+                setExtensionDetected(true);
+                setDebugMessage('Extension detected via Chrome runtime');
+              }
+            });
+          } catch (e) {
+            // Silently catch any errors
+          }
+        }
+      }
+    ];
+
+    // Run all check methods
+    checkMethods.forEach(method => method());
+    
+    // Set timeout for final check
+    setTimeout(() => {
+      setIsCheckingExtension(false);
+      if (!extensionDetected) {
+        setDebugMessage('No extension response. Ensure extension is installed and active.');
+      }
+    }, 2000);
+  };
 
   useEffect(() => {
     let isMounted = true;
+    let extensionCheckTimeout;
 
+    // Comprehensive handler for extension detection
     const handleExtensionMessage = (event) => {
-      const message = event.data;
-      console.log('Received message:', message);
+      // Multiple detection methods
+      const detectExtension = () => {
+        // postMessage detection
+        if (event.data && typeof event.data === 'object') {
+          const message = event.data;
+          if (message.type === 'BROCCOLI_EXTENSION_LOADED' || 
+              message.type === 'BROCCOLI_EXTENSION_RESPONSE') {
+            setExtensionDetected(true);
+            setDebugMessage('Extension detected and ready');
+            setIsCheckingExtension(false);
+            return true;
+          }
+        }
 
-      if (!isMounted) return;
+        // Custom event detection
+        if (event.detail && event.detail.type === 'BROCCOLI_EXTENSION_RESPONSE') {
+          setExtensionDetected(true);
+          setDebugMessage('Extension detected via custom event');
+          setIsCheckingExtension(false);
+          return true;
+        }
 
-      if (message.type === 'BROCCOLI_EXTENSION_LOADED' || 
-          message.type === 'BROCCOLI_EXTENSION_RESPONSE') {
-        setExtensionDetected(true);
-        setDebugMessage('Extension detected and ready');
+        return false;
+      };
+
+      // If detection is successful, clear any pending timeouts
+      if (detectExtension() && extensionCheckTimeout) {
+        clearTimeout(extensionCheckTimeout);
       }
 
-      if (message.type === 'CHROME_BOOKMARKS_SYNC') {
-        console.log('Received bookmarks:', message.bookmarks);
-        console.log('Received categories:', message.categories);
-        
-        // Update categories in localStorage first
-        if (message.categories && message.categories.length > 0) {
-          const existingCategories = JSON.parse(localStorage.getItem('mprokolo-library-categories') || '[]');
-          
-          // Filter out duplicate categories by name
-          const newCategories = message.categories.filter(newCat => 
-            !existingCategories.some(existingCat => existingCat.name === newCat.name)
-          );
-          
-          // Combine existing and new categories
-          const updatedCategories = [...existingCategories, ...newCategories];
-          
-          // Save updated categories to localStorage
-          localStorage.setItem('mprokolo-library-categories', JSON.stringify(updatedCategories));
-          
-          // Force a reload of the categories in the parent component
-          window.dispatchEvent(new Event('storage'));
+      // Handle successful bookmark sync
+      if (event.data && event.data.type === 'CHROME_BOOKMARKS_SYNC') {
+        const message = event.data;
+        // Create category objects directly
+        if (message.categories && message.categories.length > 0 && onCategoriesUpdate) {
+          onCategoriesUpdate(message.categories);
         }
         
         // Then import bookmarks
@@ -51,27 +115,62 @@ const BookmarksSyncModal = ({ isOpen, onClose, onImport }) => {
         onClose();
       }
 
-      if (message.type === 'CHROME_BOOKMARKS_ERROR') {
-        console.error('Bookmark sync error:', message.error);
-        setDebugMessage(`Error: ${message.error}`);
+      // Handle error messages
+      if (event.data && event.data.type === 'CHROME_BOOKMARKS_ERROR') {
+        setDebugMessage(`Error: ${event.data.error}`);
+        setIsCheckingExtension(false);
       }
     };
 
-    // Add message listener
-    window.addEventListener('message', handleExtensionMessage);
+    // Add multiple event listeners
+    const messageListener = (event) => {
+      if (isMounted) handleExtensionMessage(event);
+    };
 
-    // Check for extension on mount
-    window.postMessage({ type: 'CHECK_EXTENSION' }, '*');
+    const customEventListener = (event) => {
+      if (isMounted) handleExtensionMessage(event);
+    };
+
+    // Add listeners
+    window.addEventListener('message', messageListener);
+    document.addEventListener('BROCCOLI_EXTENSION_RESPONSE', customEventListener);
+
+    // Comprehensive initial extension check
+    const initialCheck = () => {
+      if (!extensionDetected) {
+        checkForExtension();
+        
+        // Set a timeout to ensure detection
+        extensionCheckTimeout = setTimeout(() => {
+          if (!extensionDetected && isMounted) {
+            setDebugMessage('Extension detection failed. Please check installation.');
+            setIsCheckingExtension(false);
+          }
+        }, 3000);
+      }
+    };
+
+    // Initial check with slight delay to ensure listeners are set up
+    const checkTimer = setTimeout(initialCheck, 500);
 
     // Cleanup function
     return () => {
       isMounted = false;
-      window.removeEventListener('message', handleExtensionMessage);
+      clearTimeout(checkTimer);
+      if (extensionCheckTimeout) clearTimeout(extensionCheckTimeout);
+      window.removeEventListener('message', messageListener);
+      document.removeEventListener('BROCCOLI_EXTENSION_RESPONSE', customEventListener);
     };
-  }, [onImport, onClose]);
+  }, [onImport, onClose, onCategoriesUpdate]);
 
   // Handle manual file import
-  const handleManualImport = (bookmarks) => {
+  const handleManualImport = (bookmarks, categories) => {
+    // Update categories if provided
+    if (categories && categories.length > 0 && onCategoriesUpdate) {
+      onCategoriesUpdate(categories);
+    }
+    
+    // Import bookmarks
     onImport(bookmarks);
     onClose();
   };
@@ -101,14 +200,22 @@ const BookmarksSyncModal = ({ isOpen, onClose, onImport }) => {
         </div>
 
         {/* Debug Info */}
-        {debugMessage && (
-          <div className="mb-4 p-2 bg-gray-900 rounded border border-green-800">
+        <div className="mb-4 p-2 bg-gray-900 rounded border border-green-800">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-xs text-green-400">
               <AlertTriangle className="w-4 h-4" />
-              <span>{debugMessage}</span>
+              <span>{debugMessage || 'Extension status unknown'}</span>
             </div>
+            <button 
+              onClick={checkForExtension}
+              disabled={isCheckingExtension}
+              className="text-green-400 hover:text-green-300 p-1 rounded-md transition-colors"
+              title="Check for extension"
+            >
+              <RefreshCw className={`w-4 h-4 ${isCheckingExtension ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-        )}
+        </div>
 
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -140,7 +247,7 @@ const BookmarksSyncModal = ({ isOpen, onClose, onImport }) => {
               <FileDown className="w-8 h-8 mx-auto mb-2 text-green-500" />
               <div className="text-green-400 font-medium">Manual Import</div>
               <div className="text-green-600 text-sm mt-1">
-              ⚠️UNDER DEVELOPMENT⚠️
+                ⚠️UNDER DEVELOPMENT⚠️
               </div>
             </button>
           </div>
@@ -165,7 +272,7 @@ const BookmarksSyncModal = ({ isOpen, onClose, onImport }) => {
                     <li>Click "Load unpacked"</li>
                     <li>Select the extension folder</li>
                     <li>Refresh this page</li>
-                    <li>You should see: "Extension detected and ready"</li>
+                    <li>Click the refresh button above to check again</li>
                   </ol>
                 </div>
               )}
@@ -189,13 +296,31 @@ const BookmarksSyncModal = ({ isOpen, onClose, onImport }) => {
                 if (method === 'manual') {
                   setShowImportModal(true);
                 } else if (extensionDetected) {
-                  console.log('Requesting bookmarks sync');
                   setDebugMessage('Requesting bookmarks sync...');
-                  window.postMessage({ type: 'REQUEST_BOOKMARKS_SYNC' }, '*');
+                  // Use multiple communication methods for reliability
+                  window.postMessage({ type: 'REQUEST_BOOKMARKS_SYNC', timestamp: Date.now() }, '*');
+                  try {
+                    document.dispatchEvent(new CustomEvent('REQUEST_BOOKMARKS_SYNC', { 
+                      detail: { timestamp: Date.now() } 
+                    }));
+
+                    // Additional Chrome runtime message if available
+                    if (window.chrome && window.chrome.runtime && window.chrome.runtime.sendMessage) {
+                      window.chrome.runtime.sendMessage({ type: 'REQUEST_BOOKMARKS_SYNC' });
+                    }
+                  } catch (e) {
+                    // Silently catch any errors
+                  }
+                } else {
+                  setDebugMessage('Extension not detected. Please install the extension first.');
                 }
               }}
-              className="w-full px-4 py-2 bg-green-900 text-green-100 rounded-lg 
-                       hover:bg-green-800 transition-colors flex items-center justify-center gap-2"
+              className={`w-full px-4 py-2 text-green-100 rounded-lg 
+                       transition-colors flex items-center justify-center gap-2
+                       ${method === 'extension' && !extensionDetected 
+                         ? 'bg-green-900/50 hover:bg-green-900/70 cursor-not-allowed' 
+                         : 'bg-green-900 hover:bg-green-800'}`}
+              disabled={method === 'extension' && !extensionDetected}
             >
               <Upload className="w-4 h-4" />
               Continue
