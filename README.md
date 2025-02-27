@@ -18,6 +18,7 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 - 📝 Markdown Documentation Generation
 - 🥦Bookmark Library Management
 - 🥦Sync Chrome Bookmark using Extention
+- 🥦Updated github sync system
 - 📤 Selective File Export
 - 💚 Matrix-themed UI
 
