@@ -6,12 +6,21 @@ import MatrixRain from "@/components/MatrixRain";
 const GithubLogin = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [checkingAuth, setCheckingAuth] = useState(true);
 
   useEffect(() => {
     // Check if user is already authenticated
     const checkAuth = async () => {
       try {
-        const response = await fetch("/api/repos");
+        setCheckingAuth(true);
+        const response = await fetch("/api/repos", {
+          cache: 'no-store',
+          headers: {
+            'pragma': 'no-cache',
+            'cache-control': 'no-cache'
+          }
+        });
+        
         if (response.ok) {
           // If authenticated, redirect to main page
           window.location.href = "/";
@@ -20,8 +29,11 @@ const GithubLogin = () => {
           setLoading(false);
         }
       } catch (err) {
+        console.error("Auth check error:", err);
         setError("Failed to check authentication status");
         setLoading(false);
+      } finally {
+        setCheckingAuth(false);
       }
     };
 
@@ -29,10 +41,11 @@ const GithubLogin = () => {
   }, []);
 
   const handleLogin = () => {
+    setLoading(true);
     window.location.href = "/api/auth";
   };
 
-  if (loading) {
+  if (checkingAuth) {
     return (
       <>
         <MatrixRain />
@@ -58,6 +71,7 @@ const GithubLogin = () => {
             onClick={handleLogin}
             className="group relative px-6 py-3 flex items-center gap-3 bg-black border-2 border-green-500 
                      rounded-lg hover:bg-green-500 transition-all duration-300"
+            disabled={loading}
           >
             {/* Glow effect */}
             <div
@@ -67,9 +81,13 @@ const GithubLogin = () => {
 
             {/* Button content */}
             <div className="relative flex items-center gap-3">
-              <Github className="w-5 h-5 text-green-500 group-hover:text-black transition-colors" />
+              {loading ? (
+                <Loader2 className="w-5 h-5 text-green-500 animate-spin" />
+              ) : (
+                <Github className="w-5 h-5 text-green-500 group-hover:text-black transition-colors" />
+              )}
               <span className="text-green-500 font-medium group-hover:text-black transition-colors">
-                Sign in with GitHub
+                {loading ? "Connecting..." : "Sign in with GitHub"}
               </span>
             </div>
           </button>

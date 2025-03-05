@@ -1,20 +1,20 @@
 // app/lib/page.js - Complete version with direct category updates
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { ArrowLeft } from 'lucide-react';
-import Link from 'next/link';
-import MatrixRain from '@/components/MatrixRain';
-import TopBar from './components/TopBar';
-import LinkGrid from './components/LinkGrid';
-import CategoryGrid from './components/CategoryGrid';
-import Pagination from './components/Pagination';
-import ViewToggle from './components/ViewToggle';
-import AddLinkModal from './components/AddLinkModal';
-import CategoriesManagement from './components/categories-management';
-import EditLinkModal from './components/categories-management/components/EditLinkModal';
-import BookmarksSyncModal from './components/BookmarksSyncModal';
-import SkipToContent from './components/SkipToContent';
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import MatrixRain from "@/components/MatrixRain";
+import TopBar from "./components/TopBar";
+import LinkGrid from "./components/LinkGrid";
+import CategoryGrid from "./components/CategoryGrid";
+import Pagination from "./components/Pagination";
+import ViewToggle from "./components/ViewToggle";
+import AddLinkModal from "./components/AddLinkModal";
+import CategoriesManagement from "./components/categories-management";
+import EditLinkModal from "./components/categories-management/components/EditLinkModal";
+import BookmarksSyncModal from "./components/BookmarksSyncModal";
+import SkipToContent from "./components/SkipToContent";
 
 const LinksPerPage = 18; // 6x3 grid
 
@@ -25,19 +25,20 @@ export default function LibraryPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [editMode, setEditMode] = useState(false);
-  const [viewMode, setViewMode] = useState('links'); // 'links' or 'categories'
+  const [viewMode, setViewMode] = useState("links"); // 'links' or 'categories'
   const [selectedLinks, setSelectedLinks] = useState(new Set());
   const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
   const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
-  const [isBookmarksSyncModalOpen, setIsBookmarksSyncModalOpen] = useState(false);
+  const [isBookmarksSyncModalOpen, setIsBookmarksSyncModalOpen] =
+    useState(false);
   const [editingLink, setEditingLink] = useState(null);
   const gridContainerRef = useRef(null);
   const searchInputRef = useRef(null);
   const [categoryPage, setCategoryPage] = useState(1); // Separate state for category pagination
 
   // Get the active page based on current view
-  const activePage = viewMode === 'links' ? currentPage : categoryPage;
-  const setActivePage = viewMode === 'links' ? setCurrentPage : setCategoryPage;
+  const activePage = viewMode === "links" ? currentPage : categoryPage;
+  const setActivePage = viewMode === "links" ? setCurrentPage : setCategoryPage;
 
   // Load data from localStorage
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function LibraryPage() {
     const savedCategories = localStorage.getItem("mprokolo-library-categories");
     if (savedLinks) setLinks(JSON.parse(savedLinks));
     if (savedCategories) setCategories(JSON.parse(savedCategories));
-    
+
     // Load viewMode preference if exists
     const savedViewMode = localStorage.getItem("mprokolo-library-view-mode");
     if (savedViewMode) setViewMode(savedViewMode);
@@ -53,70 +54,110 @@ export default function LibraryPage() {
 
   // Direct category update handler from bookmark import
   const handleCategoriesImport = (newCategories) => {
-    if (!newCategories || !Array.isArray(newCategories) || newCategories.length === 0) {
+    if (
+      !newCategories ||
+      !Array.isArray(newCategories) ||
+      newCategories.length === 0
+    ) {
       return;
     }
 
-    
     // Process to ensure categories have the required format and unique IDs
-    const processedCategories = newCategories.map(cat => ({
-      id: cat.id || `cat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+    const processedCategories = newCategories.map((cat) => ({
+      id:
+        cat.id ||
+        `cat-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       name: cat.name,
-      icon: cat.icon || 'folder'
+      icon: cat.icon || "folder",
     }));
-    
+
     // Merge with existing categories, avoiding duplicates by name
-    setCategories(prevCategories => {
+    setCategories((prevCategories) => {
       // Filter out new categories that already exist (by name)
-      const filteredNewCategories = processedCategories.filter(newCat => 
-        !prevCategories.some(existingCat => existingCat.name === newCat.name)
+      const filteredNewCategories = processedCategories.filter(
+        (newCat) =>
+          !prevCategories.some(
+            (existingCat) => existingCat.name === newCat.name
+          )
       );
-      
+
       // Combine existing and new categories
       return [...prevCategories, ...filteredNewCategories];
     });
-    
+
     // Save to localStorage immediately to ensure persistence
     setTimeout(() => {
-      const updatedCategories = JSON.parse(localStorage.getItem("mprokolo-library-categories") || '[]');
+      const updatedCategories = JSON.parse(
+        localStorage.getItem("mprokolo-library-categories") || "[]"
+      );
     }, 100);
   };
 
   // Custom tab handling to jump directly from search to grid
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/repos", {
+          cache: "no-store",
+          headers: {
+            pragma: "no-cache",
+            "cache-control": "no-cache",
+          },
+        });
+
+        if (!response.ok && response.status === 401) {
+          window.location.href = "/api/auth";
+          return;
+        }
+      } catch (err) {
+        console.error("Auth check error:", err);
+      }
+    };
+
+    checkAuth();
     const handleSearchKeyDown = (e) => {
-      if (e.key === 'Tab' && !e.shiftKey && e.target === searchInputRef.current) {
+      if (
+        e.key === "Tab" &&
+        !e.shiftKey &&
+        e.target === searchInputRef.current
+      ) {
         e.preventDefault(); // Prevent default tab behavior
-        
+
         // Focus the grid container first to ensure proper keyboard navigation context
         if (gridContainerRef.current) {
           gridContainerRef.current.focus();
-          
+
           // Then find the first focusable card and focus it
-          const firstCard = gridContainerRef.current.querySelector('[role="button"], [role="link"]');
+          const firstCard = gridContainerRef.current.querySelector(
+            '[role="button"], [role="link"]'
+          );
           if (firstCard) {
             firstCard.focus();
           }
         }
       }
     };
-    
+
     // Add event listener to search input
     if (searchInputRef.current) {
-      searchInputRef.current.addEventListener('keydown', handleSearchKeyDown);
+      searchInputRef.current.addEventListener("keydown", handleSearchKeyDown);
     }
-    
+
     // Clean up
     return () => {
       if (searchInputRef.current) {
-        searchInputRef.current.removeEventListener('keydown', handleSearchKeyDown);
+        searchInputRef.current.removeEventListener(
+          "keydown",
+          handleSearchKeyDown
+        );
       }
     };
   }, []);
 
   // Toggle view mode keyboard shortcut (Ctrl+Y)
+  const savedLinks = localStorage.getItem("mprokolo-library-links");
   const toggleViewMode = useCallback(() => {
-    const newMode = viewMode === 'links' ? 'categories' : 'links';
+    const newMode = viewMode === "links" ? "categories" : "links";
     setViewMode(newMode);
     resetPage();
   }, [viewMode]);
@@ -124,91 +165,103 @@ export default function LibraryPage() {
   // Filter links based on search term and selected category
   const filteredLinks = useMemo(() => {
     const lowerSearch = searchTerm.toLowerCase();
-    return links.filter(link =>
-      (searchTerm === "" ||
-        link.name?.toLowerCase().includes(lowerSearch) ||
-        link.description?.toLowerCase().includes(lowerSearch) ||
-        link.link?.toLowerCase().includes(lowerSearch) ||
-        (Array.isArray(link.tags) &&
-          link.tags.some(tag => tag.toLowerCase().includes(lowerSearch)))
-      ) &&
-      (selectedCategory === "" || link.category === selectedCategory)
+    return links.filter(
+      (link) =>
+        (searchTerm === "" ||
+          link.name?.toLowerCase().includes(lowerSearch) ||
+          link.description?.toLowerCase().includes(lowerSearch) ||
+          link.link?.toLowerCase().includes(lowerSearch) ||
+          (Array.isArray(link.tags) &&
+            link.tags.some((tag) =>
+              tag.toLowerCase().includes(lowerSearch)
+            ))) &&
+        (selectedCategory === "" || link.category === selectedCategory)
     );
   }, [links, searchTerm, selectedCategory]);
 
   // Filter categories based on search term
   const filteredCategories = useMemo(() => {
     if (!searchTerm) return categories;
-    
+
     const lowerSearch = searchTerm.toLowerCase();
-    return categories.filter(category => 
+    return categories.filter((category) =>
       category.name.toLowerCase().includes(lowerSearch)
     );
   }, [categories, searchTerm]);
 
   // Calculate total pages for both views
-  const totalLinkPages = Math.max(1, Math.ceil(filteredLinks.length / LinksPerPage));
-  const totalCategoryPages = Math.max(1, Math.ceil(filteredCategories.length / 24)); // 8x3 grid = 24 items
+  const totalLinkPages = Math.max(
+    1,
+    Math.ceil(filteredLinks.length / LinksPerPage)
+  );
+  const totalCategoryPages = Math.max(
+    1,
+    Math.ceil(filteredCategories.length / 24)
+  ); // 8x3 grid = 24 items
 
   // Get the current total pages based on view mode
-  const totalPages = viewMode === 'links' ? totalLinkPages : totalCategoryPages;
+  const totalPages = viewMode === "links" ? totalLinkPages : totalCategoryPages;
 
   // Set up keyboard shortcuts - now using activePage and setActivePage
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Only process shortcuts if no modal is open
-      if (isAddLinkModalOpen || isCategoriesModalOpen || isBookmarksSyncModalOpen || editingLink) {
+      if (
+        isAddLinkModalOpen ||
+        isCategoriesModalOpen ||
+        isBookmarksSyncModalOpen ||
+        editingLink
+      ) {
         return;
       }
 
       // Ctrl+Y to toggle view mode
-      if (e.ctrlKey && e.key === 'y') {
+      if (e.ctrlKey && e.key === "y") {
         e.preventDefault();
         toggleViewMode();
       }
-      
+
       // Ctrl+F to focus search
-      if (e.ctrlKey && e.key === 'f') {
+      if (e.ctrlKey && e.key === "f") {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
 
       // Ctrl+ArrowLeft to go to previous page
-      if (e.ctrlKey && e.key === 'ArrowLeft') {
+      if (e.ctrlKey && e.key === "ArrowLeft") {
         e.preventDefault();
         if (activePage > 1) {
           // Direct state update for reliable navigation
-          setActivePage(prev => Math.max(1, prev - 1));
+          setActivePage((prev) => Math.max(1, prev - 1));
         }
       }
 
       // Ctrl+ArrowRight to go to next page
-      if (e.ctrlKey && e.key === 'ArrowRight') {
+      if (e.ctrlKey && e.key === "ArrowRight") {
         e.preventDefault();
         if (activePage < totalPages) {
           // Direct state update for reliable navigation
-          setActivePage(prev => Math.min(totalPages, prev + 1));
+          setActivePage((prev) => Math.min(totalPages, prev + 1));
         }
       }
     };
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
-    toggleViewMode, 
-    activePage, 
-    totalPages, 
+    toggleViewMode,
+    activePage,
+    totalPages,
     setActivePage,
     viewMode,
-    isAddLinkModalOpen, 
-    isCategoriesModalOpen, 
-    isBookmarksSyncModalOpen, 
-    editingLink
+    isAddLinkModalOpen,
+    isCategoriesModalOpen,
+    isBookmarksSyncModalOpen,
+    editingLink,
   ]);
 
   // Debugging total pages
-  useEffect(() => {
-  }, [totalPages, activePage, viewMode]);
+  useEffect(() => {}, [totalPages, activePage, viewMode]);
 
   // Save viewMode preference
   useEffect(() => {
@@ -221,7 +274,10 @@ export default function LibraryPage() {
   }, [links]);
 
   useEffect(() => {
-    localStorage.setItem("mprokolo-library-categories", JSON.stringify(categories));
+    localStorage.setItem(
+      "mprokolo-library-categories",
+      JSON.stringify(categories)
+    );
   }, [categories]);
 
   // Reset selected links when exiting edit mode
@@ -238,7 +294,7 @@ export default function LibraryPage() {
 
   // New function to reset page to 1
   const resetPage = () => {
-    if (viewMode === 'links') {
+    if (viewMode === "links") {
       setCurrentPage(1);
     } else {
       setCategoryPage(1);
@@ -248,7 +304,7 @@ export default function LibraryPage() {
   // Handle category selection from CategoryGrid
   const handleCategorySelect = (categoryName) => {
     setSelectedCategory(categoryName);
-    setViewMode('links'); // Switch to links view when category is selected
+    setViewMode("links"); // Switch to links view when category is selected
     resetPage(); // Reset to page 1
   };
 
@@ -281,7 +337,9 @@ export default function LibraryPage() {
   const handleAddLink = (newLink) => {
     const linkToAdd = {
       ...newLink,
-      id: `link_${newLink.name}_${newLink.link}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      id: `link_${newLink.name}_${newLink.link}_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`,
     };
 
     if (!linkToAdd.thumbnail) {
@@ -293,34 +351,39 @@ export default function LibraryPage() {
       }
     }
 
-    setLinks(prev => [...prev, linkToAdd]);
+    setLinks((prev) => [...prev, linkToAdd]);
     setIsAddLinkModalOpen(false);
   };
 
   // Handle importing bookmarks
   const handleImportBookmarks = (bookmarks) => {
     // Add new bookmarks to existing links
-    setLinks(prevLinks => {
+    setLinks((prevLinks) => {
       // Ensure each bookmark has a unique ID
-      const processedBookmarks = bookmarks.map(bookmark => ({
+      const processedBookmarks = bookmarks.map((bookmark) => ({
         ...bookmark,
-        id: `bookmark_${bookmark.name}_${bookmark.link}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+        id: `bookmark_${bookmark.name}_${
+          bookmark.link
+        }_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
       }));
 
       // Filter out duplicate bookmarks based on URL
-      const newBookmarks = processedBookmarks.filter(newBookmark => 
-        !prevLinks.some(existingLink => existingLink.link === newBookmark.link)
+      const newBookmarks = processedBookmarks.filter(
+        (newBookmark) =>
+          !prevLinks.some(
+            (existingLink) => existingLink.link === newBookmark.link
+          )
       );
 
       return [...prevLinks, ...newBookmarks];
     });
-    
+
     // Create a notification
     if (bookmarks.length > 0) {
       const message = `Successfully imported ${bookmarks.length} bookmarks!`;
       alert(message);
     }
-    
+
     // Reset to page 1 after import
     resetPage();
   };
@@ -334,7 +397,7 @@ export default function LibraryPage() {
   // Toggle selection for a given link (used in edit mode)
   const toggleLinkSelection = (linkId) => {
     if (!editMode) return;
-    setSelectedLinks(prev => {
+    setSelectedLinks((prev) => {
       const next = new Set(prev);
       next.has(linkId) ? next.delete(linkId) : next.add(linkId);
       return next;
@@ -344,8 +407,12 @@ export default function LibraryPage() {
   // Delete selected links
   const handleDeleteSelected = () => {
     if (selectedLinks.size === 0) return;
-    if (confirm(`Are you sure you want to delete ${selectedLinks.size} selected link(s)?`)) {
-      const updatedLinks = links.filter(link => !selectedLinks.has(link.id));
+    if (
+      confirm(
+        `Are you sure you want to delete ${selectedLinks.size} selected link(s)?`
+      )
+    ) {
+      const updatedLinks = links.filter((link) => !selectedLinks.has(link.id));
       setLinks(updatedLinks);
       setSelectedLinks(new Set());
     }
@@ -356,7 +423,7 @@ export default function LibraryPage() {
     if (selectedLinks.size === paginatedLinks.length) {
       setSelectedLinks(new Set());
     } else {
-      setSelectedLinks(new Set(paginatedLinks.map(link => link.id)));
+      setSelectedLinks(new Set(paginatedLinks.map((link) => link.id)));
     }
   };
 
@@ -367,7 +434,7 @@ export default function LibraryPage() {
 
   // Save updated link
   const handleSaveLink = (updatedLink) => {
-    const updatedLinks = links.map(link =>
+    const updatedLinks = links.map((link) =>
       link.id === updatedLink.id ? updatedLink : link
     );
     setLinks(updatedLinks);
@@ -389,9 +456,14 @@ export default function LibraryPage() {
           </Link>
           <div className="flex items-center gap-4">
             <div className="text-xs text-green-600">
-              Shortcuts: Ctrl+Y (toggle view), Ctrl+F (search), Ctrl+← / Ctrl+→ (change page)
+              Shortcuts: Ctrl+Y (toggle view), Ctrl+F (search), Ctrl+← / Ctrl+→
+              (change page)
             </div>
-            <ViewToggle viewMode={viewMode} setViewMode={handleViewModeChange} tabIndex="-1" />
+            <ViewToggle
+              viewMode={viewMode}
+              setViewMode={handleViewModeChange}
+              tabIndex="-1"
+            />
             <button
               onClick={() => setIsCategoriesModalOpen(true)}
               className="px-4 py-2 bg-green-900/30 border border-green-800 text-green-400 rounded-lg hover:border-green-400 transition-colors"
@@ -421,14 +493,14 @@ export default function LibraryPage() {
           searchInputRef={searchInputRef}
         />
 
-        <div 
-          id="grid-container" 
-          ref={gridContainerRef} 
-          tabIndex="-1" 
+        <div
+          id="grid-container"
+          ref={gridContainerRef}
+          tabIndex="-1"
           className="outline-none"
-          aria-label={viewMode === 'links' ? 'Links grid' : 'Categories grid'}
+          aria-label={viewMode === "links" ? "Links grid" : "Categories grid"}
         >
-          {viewMode === 'links' ? (
+          {viewMode === "links" ? (
             <>
               <LinkGrid
                 links={paginatedLinks}
@@ -446,7 +518,7 @@ export default function LibraryPage() {
               />
             </>
           ) : (
-            <CategoryGrid 
+            <CategoryGrid
               categories={categories}
               links={links}
               onCategorySelect={handleCategorySelect}

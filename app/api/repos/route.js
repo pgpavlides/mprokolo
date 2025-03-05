@@ -18,12 +18,18 @@ export async function GET(request) {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/vnd.github.v3+json',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
           },
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to fetch repositories');
+        // If unauthorized, return 401 to trigger reauthentication
+        if (response.status === 401) {
+          return new Response('Unauthorized', { status: 401 });
+        }
+        throw new Error(`Failed to fetch repositories: ${response.status} ${response.statusText}`);
       }
 
       const repos = await response.json();
@@ -50,9 +56,12 @@ export async function GET(request) {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
       },
     });
   } catch (error) {
+    console.error('Error fetching repos:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
       headers: {

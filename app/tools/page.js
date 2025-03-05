@@ -1,23 +1,42 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { ArrowLeft, Info } from 'lucide-react';
-import MatrixRain from '@/components/MatrixRain';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { ArrowLeft, Info } from "lucide-react";
+import MatrixRain from "@/components/MatrixRain";
 
 // A simple modal component
 function InfoModal({ isOpen, onClose, title, children }) {
   useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/repos", {
+          cache: "no-store",
+          headers: {
+            pragma: "no-cache",
+            "cache-control": "no-cache",
+          },
+        });
+0
+        if (!response.ok && response.status === 401) {
+          window.location.href = "/api/auth";
+        }
+      } catch (err) {
+        console.error("Auth check error:", err);
+      }
+    };
+
+    checkAuth();
     function handleKeyDown(e) {
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         onClose();
       }
     }
     if (isOpen) {
-      document.addEventListener('keydown', handleKeyDown);
+      document.addEventListener("keydown", handleKeyDown);
     }
     return () => {
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, [isOpen, onClose]);
 
@@ -25,7 +44,10 @@ function InfoModal({ isOpen, onClose, title, children }) {
   return (
     <div className="fixed inset-0 flex items-center justify-center z-50">
       {/* Modal overlay */}
-      <div className="absolute inset-0 bg-black opacity-50" onClick={onClose}></div>
+      <div
+        className="absolute inset-0 bg-black opacity-50"
+        onClick={onClose}
+      ></div>
       {/* Modal content */}
       <div className="bg-gray-900 p-6 rounded-lg relative z-10 max-w-md mx-auto">
         <h2 className="text-xl font-bold mb-4 text-green-400">{title}</h2>
@@ -238,9 +260,9 @@ export default function ToolsPage() {
   const copyToClipboard = async (text) => {
     try {
       await navigator.clipboard.writeText(text);
-      alert('Code copied to clipboard!');
+      alert("Code copied to clipboard!");
     } catch (error) {
-      alert('Failed to copy code.');
+      alert("Failed to copy code.");
     }
   };
 
@@ -263,7 +285,7 @@ export default function ToolsPage() {
           {/* Main Content */}
           <div className="mt-8">
             <h1 className="text-2xl font-bold text-green-400 mb-6">Tools</h1>
-            
+
             {/* Tools Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* 3D DOM Viewer Tool Card */}
@@ -276,7 +298,9 @@ export default function ToolsPage() {
                 >
                   <Info className="w-5 h-5" />
                 </button>
-                <h2 className="text-lg font-semibold text-green-400 mb-2">3D DOM Viewer</h2>
+                <h2 className="text-lg font-semibold text-green-400 mb-2">
+                  3D DOM Viewer
+                </h2>
                 <button
                   onClick={() => copyToClipboard(viewerCode)}
                   className="mb-4 px-3 py-1 bg-green-700 text-green-200 rounded hover:bg-green-600 transition-colors"
@@ -298,7 +322,9 @@ export default function ToolsPage() {
                 >
                   <Info className="w-5 h-5" />
                 </button>
-                <h2 className="text-lg font-semibold text-green-400 mb-2">DOM 3D Visualize</h2>
+                <h2 className="text-lg font-semibold text-green-400 mb-2">
+                  DOM 3D Visualize
+                </h2>
                 <button
                   onClick={() => copyToClipboard(visualizeCode)}
                   className="mb-4 px-3 py-1 bg-green-700 text-green-200 rounded hover:bg-green-600 transition-colors"
@@ -321,8 +347,8 @@ export default function ToolsPage() {
         title="3D DOM Viewer - How to Use"
       >
         <p>
-          Copy the code and paste it into your browser console on any webpage. It will visualize the DOM as a
-          stack of 3D blocks.
+          Copy the code and paste it into your browser console on any webpage.
+          It will visualize the DOM as a stack of 3D blocks.
         </p>
       </InfoModal>
       <InfoModal
@@ -331,8 +357,8 @@ export default function ToolsPage() {
         title="DOM 3D Visualize - How to Use"
       >
         <p>
-          Copy the code and paste it into your browser console. This snippet applies a 3D transformation to the
-          DOM for a cool visual effect.
+          Copy the code and paste it into your browser console. This snippet
+          applies a 3D transformation to the DOM for a cool visual effect.
         </p>
       </InfoModal>
     </>

@@ -37,11 +37,8 @@ export default function Home() {
   const handleLogout = (e) => {
     e.preventDefault();
     
-    // Simple and direct cookie removal
-    document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    
-    // Directly navigate to the auth endpoint
-    window.location.href = '/api/auth';
+    // Use the new API route for secure logout
+    window.location.href = '/api/auth/logout';
   };
 
   if (loading) {

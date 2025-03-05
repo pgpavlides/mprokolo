@@ -3,6 +3,15 @@ import { mkdir, writeFile } from 'fs/promises';
 import { dirname } from 'path';
 
 export async function POST(request) {
+  // First check authentication
+  const token = request.cookies.get('token')?.value;
+  if (!token) {
+    return NextResponse.json(
+      { error: 'Unauthorized' },
+      { status: 401 }
+    );
+  }
+
   try {
     const { path: filePath, content } = await request.json();
 

@@ -4,8 +4,12 @@ export async function GET(request) {
   const path = searchParams.get('path');
   const token = request.cookies.get('token')?.value;
 
-  if (!token || !repo || !path) {
-    return new Response('Unauthorized or missing parameters', { status: 401 });
+  if (!token) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  if (!repo || !path) {
+    return new Response('Missing required parameters', { status: 400 });
   }
 
   try {
@@ -15,18 +19,35 @@ export async function GET(request) {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Accept': 'application/vnd.github.v3+json',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         },
       }
     );
 
-    if (!response.ok) throw new Error('Failed to fetch file content');
+    if (!response.ok) {
+      // If token is invalid, return 401
+      if (response.status === 401) {
+        return new Response('Unauthorized', { status: 401 });
+      }
+      throw new Error(`Failed to fetch file content: ${response.status} ${response.statusText}`);
+    }
+    
     const data = await response.json();
 
     return new Response(JSON.stringify(data), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache'
+      },
     });
   } catch (error) {
-    return new Response(error.message, { status: 500 });
+    console.error('Content fetch error:', error);
+    return new Response(JSON.stringify({ error: error.message }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

@@ -35,34 +35,104 @@ export default function RepoDetail({ params }) {
 
   useEffect(() => {
     if (id) {
-      fetchRepoDetails();
+      const checkAuth = async () => {
+        try {
+          const authResponse = await fetch("/api/repos", {
+            cache: "no-store",
+            headers: {
+              pragma: "no-cache",
+              "cache-control": "no-cache",
+            },
+          });
+
+          if (!authResponse.ok && authResponse.status === 401) {
+            window.location.href = "/api/auth";
+            return;
+          }
+
+          // Then proceed with the regular fetch
+          fetchRepoDetails();
+        } catch (error) {
+          console.error("Auth check error:", error);
+          setError("Authentication error");
+        }
+      };
+
+      checkAuth();
     }
   }, [id]);
 
   const fetchRepoDetails = async () => {
     try {
       setLoading(true);
-      
-      const repoResponse = await fetch(`/api/repo?id=${id}`);
+
+      const repoResponse = await fetch(`/api/repo?id=${id}`, {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+        },
+      });
+
       if (!repoResponse.ok) {
+        if (repoResponse.status === 401) {
+          window.location.href = "/api/auth";
+          return;
+        }
         const errorData = await repoResponse.json();
-        throw new Error(`Failed to fetch repository: ${errorData.error || repoResponse.statusText}`);
+        throw new Error(
+          `Failed to fetch repository: ${
+            errorData.error || repoResponse.statusText
+          }`
+        );
       }
+
       const repoData = await repoResponse.json();
       setRepo(repoData);
 
-      const commitResponse = await fetch(`/api/repo/commits?repo=${repoData.full_name}&per_page=1`);
+      const commitResponse = await fetch(
+        `/api/repo/commits?repo=${repoData.full_name}`,
+        {
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        }
+      );
+
       if (!commitResponse.ok) {
+        if (commitResponse.status === 401) {
+          window.location.href = "/api/auth";
+          return;
+        }
         throw new Error("Failed to fetch commit information");
       }
+
       const [latestCommitData] = await commitResponse.json();
       setLatestCommit(latestCommitData);
 
-      const treeResponse = await fetch(`/api/repo/tree?repo=${repoData.full_name}`);
+      const treeResponse = await fetch(
+        `/api/repo/tree?repo=${repoData.full_name}`,
+        {
+          headers: {
+            "Cache-Control": "no-cache",
+            Pragma: "no-cache",
+          },
+        }
+      );
+
       if (!treeResponse.ok) {
+        if (treeResponse.status === 401) {
+          window.location.href = "/api/auth";
+          return;
+        }
         const errorData = await treeResponse.json();
-        throw new Error(`Failed to fetch repository tree: ${errorData.error || treeResponse.statusText}`);
+        throw new Error(
+          `Failed to fetch repository tree: ${
+            errorData.error || treeResponse.statusText
+          }`
+        );
       }
+
       const { tree } = await treeResponse.json();
       setTreeData(tree || []);
     } catch (error) {
@@ -81,11 +151,11 @@ export default function RepoDetail({ params }) {
   const handleCopyTree = () => {
     try {
       const treeText = generateTreeText(treeData);
-      const textarea = document.createElement('textarea');
+      const textarea = document.createElement("textarea");
       textarea.value = treeText;
       document.body.appendChild(textarea);
       textarea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textarea);
       showToast("Tree structure copied to clipboard!");
     } catch (error) {
@@ -103,14 +173,14 @@ export default function RepoDetail({ params }) {
   };
 
   const handleSelectedFilesExport = async (selectedTreeData, type) => {
-    if (type === 'copy') {
+    if (type === "copy") {
       try {
         const treeText = generateTreeText(selectedTreeData);
-        const textarea = document.createElement('textarea');
+        const textarea = document.createElement("textarea");
         textarea.value = treeText;
         document.body.appendChild(textarea);
         textarea.select();
-        document.execCommand('copy');
+        document.execCommand("copy");
         document.body.removeChild(textarea);
         showToast("Selected files copied to clipboard!");
       } catch (error) {
@@ -166,14 +236,14 @@ export default function RepoDetail({ params }) {
         }
 
         try {
-          const textarea = document.createElement('textarea');
+          const textarea = document.createElement("textarea");
           textarea.value = markdown[0].content;
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand('copy');
+          document.execCommand("copy");
           document.body.removeChild(textarea);
         } catch (clipboardError) {
-          console.warn('Could not copy to clipboard:', clipboardError);
+          console.warn("Could not copy to clipboard:", clipboardError);
         }
       } else {
         // Single file
@@ -188,14 +258,14 @@ export default function RepoDetail({ params }) {
         URL.revokeObjectURL(url);
 
         try {
-          const textarea = document.createElement('textarea');
+          const textarea = document.createElement("textarea");
           textarea.value = markdown.content;
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand('copy');
+          document.execCommand("copy");
           document.body.removeChild(textarea);
         } catch (clipboardError) {
-          console.warn('Could not copy to clipboard:', clipboardError);
+          console.warn("Could not copy to clipboard:", clipboardError);
         }
       }
 
@@ -250,16 +320,16 @@ export default function RepoDetail({ params }) {
           document.body.removeChild(a);
           URL.revokeObjectURL(url);
         }
-        
+
         try {
-          const textarea = document.createElement('textarea');
+          const textarea = document.createElement("textarea");
           textarea.value = markdown[0].content;
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand('copy');
+          document.execCommand("copy");
           document.body.removeChild(textarea);
         } catch (clipboardError) {
-          console.warn('Could not copy to clipboard:', clipboardError);
+          console.warn("Could not copy to clipboard:", clipboardError);
         }
       } else {
         // Single file
@@ -274,14 +344,14 @@ export default function RepoDetail({ params }) {
         URL.revokeObjectURL(url);
 
         try {
-          const textarea = document.createElement('textarea');
+          const textarea = document.createElement("textarea");
           textarea.value = markdown.content;
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand('copy');
+          document.execCommand("copy");
           document.body.removeChild(textarea);
         } catch (clipboardError) {
-          console.warn('Could not copy to clipboard:', clipboardError);
+          console.warn("Could not copy to clipboard:", clipboardError);
         }
       }
 
@@ -334,7 +404,9 @@ export default function RepoDetail({ params }) {
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
         onExport={handleExport}
-        folders={treeData.filter(item => item.type === "tree").map(item => item.path)}
+        folders={treeData
+          .filter((item) => item.type === "tree")
+          .map((item) => item.path)}
       />
 
       <FileSelector

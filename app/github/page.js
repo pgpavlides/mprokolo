@@ -3,14 +3,44 @@
 import GitHubRepoList from '@/components/GitHubRepoList';
 import Link from 'next/link';
 import { ArrowLeft, RefreshCw } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function GithubPage() {
   const [key, setKey] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+
+  useEffect(() => {
+    // Check auth status
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/repos', {
+          cache: 'no-store',
+          headers: {
+            'pragma': 'no-cache',
+            'cache-control': 'no-cache'
+          }
+        });
+        
+        setIsAuthenticated(response.ok);
+        
+        if (!response.ok && response.status === 401) {
+          window.location.href = '/api/auth';
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   const handleRefresh = () => {
     setKey(prev => prev + 1);
   };
+
+  if (!isAuthenticated) {
+    return null; // This will be brief as the redirect happens in the useEffect
+  }
 
   return (
     <div className="min-h-screen bg-black">
@@ -38,4 +68,3 @@ export default function GithubPage() {
     </div>
   );
 }
-

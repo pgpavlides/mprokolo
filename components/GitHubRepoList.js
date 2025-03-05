@@ -9,7 +9,7 @@ const GitHubRepoList = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-
+  const [authError, setAuthError] = useState(false);
 
   useEffect(() => {
     fetchRepos();
@@ -17,26 +17,36 @@ const GitHubRepoList = () => {
 
   const fetchRepos = async () => {
     try {
-      const response = await fetch('/api/repos');
+      setLoading(true);
+      const response = await fetch('/api/repos', {
+        cache: 'no-store',
+        headers: {
+          'pragma': 'no-cache',
+          'cache-control': 'no-cache'
+        }
+      });
+      
       if (!response.ok) {
         if (response.status === 401) {
-          window.location.href = '/api/auth';
+          setAuthError(true);
           return;
         }
         throw new Error('Failed to fetch repositories');
       }
+      
       const data = await response.json();
       setRepos(data);
-      setLoading(false);
     } catch (err) {
+      console.error('Repository fetch error:', err);
       setError(err.message);
+    } finally {
       setLoading(false);
     }
   };
 
   const handleLogout = () => {
-    document.cookie = 'token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-    window.location.reload();
+    // Use the dedicated logout route
+    window.location.href = '/api/auth/logout';
   };
 
   // Filter repositories based on search term
@@ -56,16 +66,31 @@ const GitHubRepoList = () => {
     );
   }
 
-  if (error && error.includes('Unauthorized')) {
+  if (authError) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-black">
         <Github className="w-16 h-16 mb-4 text-green-500" />
+        <p className="text-red-500 mb-4">Authentication error. Please sign in again.</p>
         <button
           onClick={() => window.location.href = '/api/auth'}
           className="px-6 py-3 bg-green-600 text-black font-bold rounded-lg hover:bg-green-400 transition-colors duration-200 flex items-center gap-2"
         >
           <Github className="w-5 h-5" />
           Sign in with GitHub
+        </button>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen bg-black">
+        <p className="text-red-500 mb-4">Error: {error}</p>
+        <button 
+          onClick={fetchRepos}
+          className="px-6 py-3 bg-green-600 text-black font-bold rounded-lg hover:bg-green-400 transition-colors duration-200"
+        >
+          Try Again
         </button>
       </div>
     );

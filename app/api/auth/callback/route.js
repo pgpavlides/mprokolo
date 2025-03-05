@@ -26,14 +26,16 @@ export async function GET(request) {
       throw new Error(data.error);
     }
 
-    // Set the token in an HTTP-only cookie
-    const cookieValue = `token=${data.access_token}; Path=/; HttpOnly; SameSite=Strict; Max-Age=7200`;
+    // Set the token in an HTTP-only cookie with improved security settings
+    const cookieValue = `token=${data.access_token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=7200; Secure`;
     
     return new Response('Authentication successful', {
       status: 302,
       headers: {
         'Set-Cookie': cookieValue,
         'Location': '/',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
       },
     });
   } catch (error) {

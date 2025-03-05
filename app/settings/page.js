@@ -1,10 +1,62 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, User, Globe, Shield } from 'lucide-react';
+import { ArrowLeft, User, Globe, Shield, Loader2 } from 'lucide-react';
 import MatrixRain from '@/components/MatrixRain';
 
 export default function SettingsPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check auth status
+    const checkAuth = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/repos', {
+          cache: 'no-store',
+          headers: {
+            'pragma': 'no-cache',
+            'cache-control': 'no-cache'
+          }
+        });
+        
+        setIsAuthenticated(response.ok);
+        
+        if (!response.ok && response.status === 401) {
+          window.location.href = '/api/auth';
+        }
+      } catch (err) {
+        console.error('Auth check error:', err);
+        setIsAuthenticated(false);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  const handleLogout = () => {
+    window.location.href = '/api/auth/logout';
+  };
+
+  if (loading) {
+    return (
+      <>
+        <MatrixRain />
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="animate-spin h-8 w-8 text-green-500" />
+        </div>
+      </>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // The useEffect will handle redirecting
+  }
+
   return (
     <>
       <MatrixRain />
@@ -38,6 +90,12 @@ export default function SettingsPage() {
                     <span className="text-green-600">GitHub Connection</span>
                     <span className="text-green-400">Connected</span>
                   </div>
+                  <button 
+                    onClick={handleLogout}
+                    className="px-4 py-2 bg-red-900/30 text-red-400 rounded hover:bg-red-900/50 transition-colors"
+                  >
+                    Logout
+                  </button>
                 </div>
               </div>
 
