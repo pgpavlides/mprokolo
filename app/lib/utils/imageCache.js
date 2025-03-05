@@ -1,10 +1,15 @@
-// File: app/lib/utils/imageCache.js
+// File path: app/lib/utils/imageCache.js
 
 const IMAGE_CACHE_KEY = 'mprokolo-image-cache';
 const CACHE_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 const MAX_CACHE_SIZE = 200; // Maximum number of items in cache
 
+// Helper to safely check if we're in a browser environment
+const isBrowser = typeof window !== 'undefined';
+
 export const getImageCache = () => {
+  if (!isBrowser) return {};
+  
   try {
     const cache = localStorage.getItem(IMAGE_CACHE_KEY);
     return cache ? JSON.parse(cache) : {};
@@ -15,6 +20,8 @@ export const getImageCache = () => {
 };
 
 export const setImageCache = (cache) => {
+  if (!isBrowser) return;
+  
   try {
     localStorage.setItem(IMAGE_CACHE_KEY, JSON.stringify(cache));
   } catch (error) {
@@ -31,7 +38,7 @@ export const setImageCache = (cache) => {
 };
 
 export const getCachedImage = (url) => {
-  if (!url) return null;
+  if (!isBrowser || !url) return null;
   
   try {
     const cache = getImageCache();
@@ -54,7 +61,7 @@ export const getCachedImage = (url) => {
 };
 
 export const setCachedImage = (url, imageUrl) => {
-  if (!url || !imageUrl) return;
+  if (!isBrowser || !url || !imageUrl) return;
   
   try {
     const cache = getImageCache();
@@ -75,6 +82,8 @@ export const setCachedImage = (url, imageUrl) => {
 };
 
 export const clearOldCache = () => {
+  if (!isBrowser) return;
+  
   try {
     const cache = getImageCache();
     const now = Date.now();
@@ -94,6 +103,8 @@ export const clearOldCache = () => {
 
 // Remove oldest entries when cache gets too large
 export const trimCache = () => {
+  if (!isBrowser) return;
+  
   try {
     const cache = getImageCache();
     const entries = Object.entries(cache);
@@ -114,14 +125,16 @@ export const trimCache = () => {
   } catch (error) {
     console.error('Error trimming cache:', error);
     // If all else fails, just clear the entire cache
-    localStorage.removeItem(IMAGE_CACHE_KEY);
+    if (isBrowser) {
+      localStorage.removeItem(IMAGE_CACHE_KEY);
+    }
   }
 };
 
 // New helper function to generate a favicon URL using the new endpoint
 export const getFaviconUrl = (linkUrl) => {
   try {
-    const { hostname } = new URL(linkUrl);
+    const url = new URL(linkUrl);
     return `https://www.google.com/s2/favicons?domain=${url.hostname}&sz=128`;
   } catch (error) {
     console.error('Error generating favicon URL:', error);

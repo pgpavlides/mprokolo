@@ -1,4 +1,4 @@
-// File: app/lib/components/LinkCard.js
+// File path: app/lib/components/LinkCard.js
 import { useState, useEffect } from 'react';
 import { Settings, Image as ImageIcon, ExternalLink } from 'lucide-react';
 import { getCachedImage, setCachedImage, getFaviconUrl } from '../utils/imageCache';
@@ -8,9 +8,16 @@ const LinkCard = ({ link, editMode, onEdit, tabIndex }) => {
   const [imageError, setImageError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isFocused, setIsFocused] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
+    
+    if (!isClient) return;
     
     const loadPreview = async () => {
       if (!link.link || imageError) {
@@ -84,7 +91,7 @@ const LinkCard = ({ link, editMode, onEdit, tabIndex }) => {
     return () => {
       isMounted = false;
     };
-  }, [link.link, link.thumbnail, imageError]);
+  }, [link.link, link.thumbnail, imageError, isClient]);
 
   const categoryName =
     typeof link.category === 'string'

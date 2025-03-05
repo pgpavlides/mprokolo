@@ -1,3 +1,4 @@
+// File path: app/settings/page.js
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -8,8 +9,11 @@ import MatrixRain from '@/components/MatrixRain';
 export default function SettingsPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
+    setIsClient(true);
+    
     // Check auth status
     const checkAuth = async () => {
       try {
@@ -42,7 +46,7 @@ export default function SettingsPage() {
     window.location.href = '/api/auth/logout';
   };
 
-  if (loading) {
+  if (!isClient || loading) {
     return (
       <>
         <MatrixRain />
