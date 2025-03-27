@@ -7,9 +7,15 @@ export async function GET(request) {
   }
 
   try {
-    // REPLACE THESE WITH YOUR ACTUAL CREDENTIALS
-    const clientId = 'YOUR_ACTUAL_CLIENT_ID_HERE';
-    const clientSecret = 'YOUR_ACTUAL_CLIENT_SECRET_HERE';
+    // Use environment variables for credentials
+    const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23liFRAVWWeQMV3pYe';
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+    
+    // Verify client secret is available
+    if (!clientSecret) {
+      console.error('GitHub client secret is missing. Please set GITHUB_CLIENT_SECRET in your environment variables.');
+      return new Response('Server configuration error: Missing GitHub client secret', { status: 500 });
+    }
     
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
