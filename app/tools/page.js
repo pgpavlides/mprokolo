@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, Info } from 'lucide-react';
 import MatrixRain from '@/components/MatrixRain';
 import DirectoryTreeGenerator from './components/DirectoryTreeGenerator';
+import LocalMdGenerator from './components/LocalMdGenerator';
 
 // A simple modal component
 function InfoModal({ isOpen, onClose, title, children }) {
@@ -48,6 +49,7 @@ export default function ToolsPage() {
   const [viewerModalOpen, setViewerModalOpen] = useState(false);
   const [visualizeModalOpen, setVisualizeModalOpen] = useState(false);
   const [directoryTreeModalOpen, setDirectoryTreeModalOpen] = useState(false);
+  const [localMdModalOpen, setLocalMdModalOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -127,6 +129,11 @@ export default function ToolsPage() {
               <DirectoryTreeGenerator />
             </div>
             
+            {/* Local MD Generator (New Tool) */}
+            <div className="mb-8">
+              <LocalMdGenerator />
+            </div>
+            
             {/* Tools Grid for other tools */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* 3D DOM Viewer Tool Card */}
@@ -188,6 +195,27 @@ export default function ToolsPage() {
           stack of 3D blocks.
         </p>
       </InfoModal>
+
+      <InfoModal
+        isOpen={localMdModalOpen}
+        onClose={() => setLocalMdModalOpen(false)}
+        title="Local MD Generator - How to Use"
+      >
+        <p>
+          This tool generates markdown documentation of your local project directory structure and file contents,
+          similar to the GitHub MD Generator but for local files.
+        </p>
+        <ul className="list-disc list-inside mt-2">
+          <li>Select a directory from your local machine</li>
+          <li>Configure excludes for folders and file types</li>
+          <li>Generate a complete markdown documentation</li>
+          <li>Download the generated markdown file</li>
+        </ul>
+        <p className="mt-2">
+          For large projects, you can enable file splitting to break the output into multiple markdown files.
+        </p>
+      </InfoModal>
+
       <InfoModal
         isOpen={visualizeModalOpen}
         onClose={() => setVisualizeModalOpen(false)}
