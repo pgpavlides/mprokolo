@@ -7,9 +7,16 @@ export async function GET(request) {
   }
 
   try {
-    // These values are configured in your GitHub OAuth app
-    const clientId = 'Ov23liHUvWs884aAKKrv';
-    const clientSecret = '6613b83a0190aea8ad38d139db628f3667c027df';
+    // Get credentials from environment variables with fallbacks
+    // Only use fallbacks for client ID (not sensitive) to enable local development
+    const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23liHUvWs884aAKKrv';
+    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+    
+    // Verify client secret is available
+    if (!clientSecret) {
+      console.error('GitHub client secret is missing from environment variables');
+      return new Response('Server configuration error: Missing GitHub client secret', { status: 500 });
+    }
     
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
