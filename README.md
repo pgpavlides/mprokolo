@@ -34,7 +34,7 @@ Broccoli GitHub Creator is a web application that simplifies GitHub repository d
 
 ## Prerequisites
 
-- Node.js (v18 or later)
+- Node.js (v18 or laters)
 - npm or yarns
 - GitHub Account
 
