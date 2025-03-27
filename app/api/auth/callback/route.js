@@ -1,4 +1,4 @@
-import { getGitHubConfig } from '@/utils/amplify-secrets';
+import { getGitHubOAuthConfig } from '@/utils/aws-ssm';
 
 export async function GET(request) {
   const searchParams = request.nextUrl.searchParams;
@@ -9,13 +9,13 @@ export async function GET(request) {
   }
 
   try {
-    // Get GitHub configuration from our utility
-    const { clientId, clientSecret, redirectUri } = getGitHubConfig();
+    // Get GitHub configuration from AWS SSM Parameter Store - production-grade approach
+    const { clientId, clientSecret, redirectUri } = await getGitHubOAuthConfig();
     
     // Verify client secret is available
     if (!clientSecret) {
-      console.error('GitHub client secret is missing. This might be an issue with AWS Amplify environment variables.');
-      return new Response('Server configuration error: Missing GitHub client secret. Please check AMPLIFY_ENV_GUIDE.md for troubleshooting.', { status: 500 });
+      console.error('GitHub client secret is missing from AWS SSM Parameter Store');
+      return new Response('Server configuration error: GitHub OAuth credentials not properly configured in AWS SSM Parameter Store.', { status: 500 });
     }
     
     const response = await fetch('https://github.com/login/oauth/access_token', {
