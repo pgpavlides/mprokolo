@@ -12,6 +12,19 @@ This happens when the redirect URI in your GitHub OAuth application settings doe
 
 ## Solution
 
+### 0. AWS Environment Configuration
+
+If you're deploying to AWS, make sure to properly set your environment variables in the AWS console:
+
+1. Go to your AWS Lambda function configuration
+2. Find the "Environment variables" section
+3. Add the following variables:
+   - `GITHUB_CLIENT_ID`: Your GitHub OAuth App client ID
+   - `GITHUB_CLIENT_SECRET`: Your GitHub OAuth App client secret
+   - `NODE_ENV`: Set to `production`
+
+**Important:** Double-check these variables are actually set in your production environment. You can visit `/api/debug-env` on your deployed site to verify what environment variables are available (remove this endpoint before final deployment for security).
+
 ### 1. GitHub OAuth App Configuration
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)

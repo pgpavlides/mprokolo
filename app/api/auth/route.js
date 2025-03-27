@@ -2,13 +2,28 @@ export async function GET(request) {
   // Use environment variables for configuration
   const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23liFRAVWWeQMV3pYe';
   
-  // Determine the base URL dynamically
+  // Determine the base URL dynamically with more reliable environment detection
   const host = request.headers.get('host');
-  const protocol = host.includes('localhost') ? 'http' : 'https';
-  const baseUrl = `${protocol}://${host}`;
   
-  // Set the redirect URI to match exactly what's registered in GitHub OAuth App
-  const redirectUri = `${baseUrl}/api/auth/callback`;
+  // Force to production URL if running in production environment
+  // Check for common production environment variables
+  const isProduction = process.env.NODE_ENV === 'production' || 
+                      process.env.AWS_LAMBDA_FUNCTION_NAME ||
+                      host === 'mprokolo.gr';
+                      
+  let redirectUri;
+  
+  if (isProduction) {
+    // Hard-code the production URL to avoid any host header spoofing issues
+    redirectUri = 'https://mprokolo.gr/api/auth/callback';
+    console.log('Using production redirect URI:', redirectUri);
+  } else {
+    // Local development
+    const protocol = 'http';
+    const baseUrl = `${protocol}://${host}`;
+    redirectUri = `${baseUrl}/api/auth/callback`;
+    console.log('Using local development redirect URI:', redirectUri);
+  }
 
   const githubAuthUrl =
     `https://github.com/login/oauth/authorize?` +

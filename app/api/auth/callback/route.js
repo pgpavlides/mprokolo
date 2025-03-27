@@ -7,14 +7,35 @@ export async function GET(request) {
   }
 
   try {
-    // Use environment variables for credentials
-    const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23liFRAVWWeQMV3pYe';
-    const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+    // Check if we're in production environment
+    const host = request.headers.get('host');
+    const isProduction = process.env.NODE_ENV === 'production' || 
+                        process.env.AWS_LAMBDA_FUNCTION_NAME ||
+                        host === 'mprokolo.gr';
     
-    // Verify client secret is available
-    if (!clientSecret) {
-      console.error('GitHub client secret is missing. Please set GITHUB_CLIENT_SECRET in your environment variables.');
-      return new Response('Server configuration error: Missing GitHub client secret', { status: 500 });
+    // Use environment variables for credentials - with clear production/development distinction
+    let clientId, clientSecret;
+    
+    if (isProduction) {
+      // In production, strictly require environment variables
+      clientId = process.env.GITHUB_CLIENT_ID;
+      clientSecret = process.env.GITHUB_CLIENT_SECRET;
+      console.log('Using production OAuth configuration');
+    } else {
+      // In development, allow fallbacks
+      clientId = process.env.GITHUB_CLIENT_ID || 'Ov23liFRAVWWeQMV3pYe';
+      clientSecret = process.env.GITHUB_CLIENT_SECRET;
+      console.log('Using development OAuth configuration');
+    }
+    
+    // Verify credentials are available
+    if (!clientId || !clientSecret) {
+      const missingVars = [];
+      if (!clientId) missingVars.push('GITHUB_CLIENT_ID');
+      if (!clientSecret) missingVars.push('GITHUB_CLIENT_SECRET');
+      
+      console.error(`Missing required environment variables: ${missingVars.join(', ')}`);
+      return new Response(`Server configuration error: Missing ${missingVars.join(', ')}`, { status: 500 });
     }
     
     const response = await fetch('https://github.com/login/oauth/access_token', {
