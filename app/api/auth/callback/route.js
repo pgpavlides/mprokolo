@@ -7,15 +7,14 @@ export async function GET(request) {
   }
 
   try {
-    // Get credentials from environment variables with fallbacks
-    // Only use fallbacks for client ID (not sensitive) to enable local development
-    const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23liHUvWs884aAKKrv';
+    // Read from environment variables - this will work with the .env file
+    const clientId = process.env.GITHUB_CLIENT_ID;
     const clientSecret = process.env.GITHUB_CLIENT_SECRET;
     
-    // Verify client secret is available
-    if (!clientSecret) {
-      console.error('GitHub client secret is missing from environment variables');
-      return new Response('Server configuration error: Missing GitHub client secret', { status: 500 });
+    // Verify environment variables are available
+    if (!clientId || !clientSecret) {
+      console.error('GitHub OAuth credentials missing from environment variables');
+      return new Response('Server configuration error: Missing GitHub OAuth credentials', { status: 500 });
     }
     
     const response = await fetch('https://github.com/login/oauth/access_token', {

@@ -1,9 +1,13 @@
 export async function GET(request) {
-  // Use the client ID from environment variables with fallback
-  const clientId = process.env.GITHUB_CLIENT_ID || 'Ov23liHUvWs884aAKKrv';
+  // Read from environment variables - this will work with the .env file
+  const clientId = process.env.GITHUB_CLIENT_ID;
   const redirectUri = 'https://mprokolo.gr/api/auth/callback';
   
-  console.log(`Using GitHub OAuth with redirect: ${redirectUri}`);
+  // Verify client ID is available
+  if (!clientId) {
+    console.error('GitHub client ID missing from environment variables');
+    return new Response('Server configuration error: Missing GitHub client ID', { status: 500 });
+  }
   
   const githubAuthUrl =
     `https://github.com/login/oauth/authorize?` +
