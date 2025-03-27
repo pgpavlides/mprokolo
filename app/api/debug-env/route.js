@@ -10,6 +10,8 @@ export async function GET(request) {
   const envInfo = {
     NODE_ENV: process.env.NODE_ENV || 'not set',
     AWS_LAMBDA_FUNCTION_NAME: process.env.AWS_LAMBDA_FUNCTION_NAME ? 'set' : 'not set',
+    AWS_LAMBDA_FUNCTION_VERSION: process.env.AWS_LAMBDA_FUNCTION_VERSION ? 'set' : 'not set',
+    AWS_REGION: process.env.AWS_REGION || 'not set',
     VERCEL_ENV: process.env.VERCEL_ENV || 'not set',
     GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID ? 'set' : 'not set', 
     GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET ? 'set' : 'not set',

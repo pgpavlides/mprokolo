@@ -30,7 +30,12 @@ const GithubLogin = () => {
         }
       } catch (err) {
         console.error("Auth check error:", err);
-        setError("Failed to check authentication status");
+        // Check if the error message contains environment variable information
+        if (err.message && err.message.includes('environment variables')) {
+          setError("Server configuration error: GitHub OAuth credentials are not properly configured. Please contact the administrator.");
+        } else {
+          setError("Failed to check authentication status");
+        }
         setLoading(false);
       } finally {
         setCheckingAuth(false);
