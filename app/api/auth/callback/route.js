@@ -1,3 +1,5 @@
+import config from '@/app/config';
+
 export async function GET(request) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
@@ -14,8 +16,8 @@ export async function GET(request) {
         'Accept': 'application/json',
       },
       body: JSON.stringify({
-        client_id: process.env.GITHUB_CLIENT_ID,
-        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        client_id: config.github.clientId,
+        client_secret: config.github.clientSecret,
         code,
       }),
     });

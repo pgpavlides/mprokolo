@@ -85,6 +85,23 @@ yarn dev
 - `GITHUB_CLIENT_SECRET`: GitHub OAuth App Client Secret
 - `NEXT_PUBLIC_APP_URL`: Your application's base URL
 
+### Fallback Configuration
+
+If you're having issues with environment variables not loading in your deployment, you can directly edit the values in `app/config.js`. This provides a fallback mechanism when environment variables don't work properly.
+
+```js
+// Edit this file directly if environment variables are not working
+const config = {
+  github: {
+    clientId: process.env.GITHUB_CLIENT_ID || "your_github_client_id_here",
+    clientSecret: process.env.GITHUB_CLIENT_SECRET || "your_github_client_secret_here",
+  },
+  app: {
+    url: process.env.NEXT_PUBLIC_APP_URL || "https://mprokolo.gr",
+  },
+};
+```
+
 And on your deploy site
 
 ## Technologies
