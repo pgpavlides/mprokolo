@@ -1,5 +1,3 @@
-import { getGitHubOAuthConfig } from '@/utils/aws-ssm';
-
 export async function GET(request) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
@@ -9,14 +7,9 @@ export async function GET(request) {
   }
 
   try {
-    // Get GitHub configuration from AWS SSM Parameter Store - production-grade approach
-    const { clientId, clientSecret, redirectUri } = await getGitHubOAuthConfig();
-    
-    // Verify client secret is available
-    if (!clientSecret) {
-      console.error('GitHub client secret is missing from AWS SSM Parameter Store');
-      return new Response('Server configuration error: GitHub OAuth credentials not properly configured in AWS SSM Parameter Store.', { status: 500 });
-    }
+    // These values are configured in your GitHub OAuth app
+    const clientId = 'Ov23liHUvWs884aAKKrv';
+    const clientSecret = '6613b83a0190aea8ad38d139db628f3667c027df';
     
     const response = await fetch('https://github.com/login/oauth/access_token', {
       method: 'POST',
