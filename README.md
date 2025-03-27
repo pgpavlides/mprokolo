@@ -114,7 +114,7 @@ And on your deploy site
 
 ## Security
 
-- Implements secure GitHub OAuth flow
+- Implements secure GitHub OAuth flow gamo
 - Uses HTTP-only cookies for token management
 - Implements token-based authentication
 

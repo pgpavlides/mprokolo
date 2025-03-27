@@ -6,7 +6,7 @@
 // Store hardcoded values only for non-sensitive data
 const CONFIG = {
   // Public non-sensitive values that can be hardcoded safely
-  GITHUB_CLIENT_ID: 'Ov23liEYl3sJa1JMlomB',
+  GITHUB_CLIENT_ID: 'Ov23liHUvWs884aAKKrv',
   NEXT_PUBLIC_APP_URL: 'https://mprokolo.gr',
   
   // DO NOT hardcode sensitive values like client secrets here
