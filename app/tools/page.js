@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, Info } from 'lucide-react';
 import MatrixRain from '@/components/MatrixRain';
+import DirectoryTreeGenerator from './components/DirectoryTreeGenerator';
 
 // A simple modal component
 function InfoModal({ isOpen, onClose, title, children }) {
@@ -43,9 +44,10 @@ function InfoModal({ isOpen, onClose, title, children }) {
 }
 
 export default function ToolsPage() {
-  // Two state variables to control each modal
+  // State variables to control modals
   const [viewerModalOpen, setViewerModalOpen] = useState(false);
   const [visualizeModalOpen, setVisualizeModalOpen] = useState(false);
+  const [directoryTreeModalOpen, setDirectoryTreeModalOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -104,7 +106,7 @@ export default function ToolsPage() {
     <>
       <MatrixRain />
       <div className="min-h-screen bg-transparent">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 pb-12">
           {/* Header with Back Button */}
           <div className="py-4">
             <Link
@@ -120,7 +122,12 @@ export default function ToolsPage() {
           <div className="mt-8">
             <h1 className="text-2xl font-bold text-green-400 mb-6">Tools</h1>
             
-            {/* Tools Grid */}
+            {/* Directory Tree Generator (New Tool) */}
+            <div className="mb-8">
+              <DirectoryTreeGenerator />
+            </div>
+            
+            {/* Tools Grid for other tools */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* 3D DOM Viewer Tool Card */}
               <div className="relative border border-green-800 rounded-lg p-6 hover:border-green-400 transition-colors bg-black/50 backdrop-blur-sm">
@@ -190,6 +197,26 @@ export default function ToolsPage() {
           Copy the code and paste it into your browser console. This snippet applies a 3D transformation to the
           DOM for a cool visual effect.
         </p>
+      </InfoModal>
+      <InfoModal
+        isOpen={directoryTreeModalOpen}
+        onClose={() => setDirectoryTreeModalOpen(false)}
+        title="Directory Tree Generator - How to Use"
+      >
+        <p>
+          Select a directory from your file system to generate a visual tree representation.
+          You can customize the output by changing the options provided.
+        </p>
+        <ul className="list-disc list-inside mt-2">
+          <li>Expand Folders: Show subfolders and their contents</li>
+          <li>Include Files: Show files in addition to folders</li>
+
+          <li>Excluded Folders: Skip common large directories like node_modules and .git</li>
+        </ul>
+        <p className="mt-2">
+          Once generated, you can copy the tree to your clipboard or download it as a text file.
+        </p>
+
       </InfoModal>
     </>
   );
