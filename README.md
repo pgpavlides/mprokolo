@@ -104,7 +104,7 @@ const config = {
 
 And on your deploy site
 
-## Technologies
+## Technologia
 
 - Next.js 15
 - React
