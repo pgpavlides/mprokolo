@@ -12,6 +12,7 @@ export default function DirectoryTreeGenerator() {
   const [includeFiles, setIncludeFiles] = useState(true);
   const [showInstructionsPopup, setShowInstructionsPopup] = useState(false);
   const [projectDir, setProjectDir] = useState('');
+  const [fullPath, setFullPath] = useState('');
   const [packageJsonContent, setPackageJsonContent] = useState('');
   const [rawTree, setRawTree] = useState('');
   const popupRef = useRef(null);
@@ -44,7 +45,7 @@ export default function DirectoryTreeGenerator() {
     },
     {
       id: "coding_lang",
-      text: "❇️**Coding Language** : {read `package.json`}",
+      text: "❇️**Coding Language** : JavaScript/TypeScript",
       active: true,
       isHeader: true
     },
@@ -152,6 +153,16 @@ export default function DirectoryTreeGenerator() {
       // Store the top-level directory name
       setProjectDir(dirHandle.name);
       
+      // Try to get full path - Note: FileSystemAPI doesn't provide full path for security,
+      // we have to approximate it
+      try {
+        // Create a representation of the full path
+        setFullPath(`/.../${dirHandle.name}`);
+      } catch (err) {
+        console.log('Unable to determine full path:', err);
+        setFullPath(dirHandle.name);
+      }
+      
       // Try to read package.json if it exists
       try {
         const packageJsonFile = await dirHandle.getFileHandle('package.json');
@@ -168,7 +179,7 @@ export default function DirectoryTreeGenerator() {
       setRawTree(tree);
       
       // Generate AI instructions and combine with tree
-      const completeOutput = generateOutput(dirHandle.name, tree);
+      const completeOutput = generateOutput(fullPath || dirHandle.name, tree);
       setTreeOutput(completeOutput);
     } catch (err) {
       console.error('Error selecting directory:', err);
@@ -213,35 +224,6 @@ export default function DirectoryTreeGenerator() {
         text = text.replace("{Application Directory}", dirName);
       } else if (item.id === "app_tree") {
         text = text.replace("{Application tree}", "Below");
-      } else if (item.id === "coding_lang" && packageJsonContent) {
-        try {
-          const packageJson = JSON.parse(packageJsonContent);
-          const dependencies = {...(packageJson.dependencies || {}), ...(packageJson.devDependencies || {})};
-          let langInfo = "";
-          
-          // Identify main languages/frameworks
-          if (dependencies.react) langInfo += "React";
-          if (dependencies.next) langInfo += langInfo ? ", Next.js" : "Next.js";
-          if (dependencies.vue) langInfo += langInfo ? ", Vue.js" : "Vue.js";
-          if (dependencies.angular) langInfo += langInfo ? ", Angular" : "Angular";
-          if (dependencies.express) langInfo += langInfo ? ", Express" : "Express";
-          if (dependencies.typescript) langInfo += langInfo ? ", TypeScript" : "TypeScript";
-          
-          // If no specific frameworks detected, use more generic info
-          if (!langInfo && packageJson.name) {
-            langInfo = `${packageJson.name}`;
-            if (packageJson.version) langInfo += ` v${packageJson.version}`;
-          } else if (!langInfo) {
-            langInfo = "JavaScript/Node.js";
-          }
-          
-          text = text.replace("{read `package.json`}", langInfo);
-        } catch (e) {
-          console.error('Error parsing package.json:', e);
-          text = text.replace("{read `package.json`}", "JavaScript/Node.js (package.json parsing error)");
-        }
-      } else if (item.id === "coding_lang") {
-        text = text.replace("{read `package.json`}", "JavaScript/Node.js (no package.json found)");
       }
       
       aiInstructions += text + "\n";
@@ -359,7 +341,7 @@ export default function DirectoryTreeGenerator() {
     
     // Update the tree output if it exists
     if (rawTree && projectDir) {
-      const updatedOutput = generateOutput(projectDir, rawTree);
+      const updatedOutput = generateOutput(fullPath || projectDir, rawTree);
       setTreeOutput(updatedOutput);
     }
   };
@@ -380,7 +362,7 @@ export default function DirectoryTreeGenerator() {
       
       // Update the tree output if it exists
       if (rawTree && projectDir) {
-        const updatedOutput = generateOutput(projectDir, rawTree);
+        const updatedOutput = generateOutput(fullPath || projectDir, rawTree);
         setTreeOutput(updatedOutput);
       }
     }
@@ -392,7 +374,7 @@ export default function DirectoryTreeGenerator() {
     
     // Update the tree output if it exists
     if (rawTree && projectDir) {
-      const updatedOutput = generateOutput(projectDir, rawTree);
+      const updatedOutput = generateOutput(fullPath || projectDir, rawTree);
       setTreeOutput(updatedOutput);
     }
   };
