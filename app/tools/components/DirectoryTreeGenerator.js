@@ -13,6 +13,7 @@ export default function DirectoryTreeGenerator() {
   const [showInstructionsPopup, setShowInstructionsPopup] = useState(false);
   const [projectDir, setProjectDir] = useState('');
   const [fullPath, setFullPath] = useState('');
+  const [showPathInput, setShowPathInput] = useState(false);
   const [packageJsonContent, setPackageJsonContent] = useState('');
   const [rawTree, setRawTree] = useState('');
   const popupRef = useRef(null);
@@ -153,15 +154,24 @@ export default function DirectoryTreeGenerator() {
       // Store the top-level directory name
       setProjectDir(dirHandle.name);
       
-      // Try to get full path - Note: FileSystemAPI doesn't provide full path for security,
-      // we have to approximate it
-      try {
-        // Create a representation of the full path
-        setFullPath(`/.../${dirHandle.name}`);
-      } catch (err) {
-        console.log('Unable to determine full path:', err);
-        setFullPath(dirHandle.name);
+      // Browser security restricts getting full path
+      // The File System Access API intentionally only provides the directory name, not the full path
+      // This is a security feature of all browsers and cannot be bypassed
+      
+      // Try to make a reasonable guess at the path based on common patterns
+      // This is just a guess and may not be accurate
+      if (typeof window !== 'undefined') {
+        const isWindows = navigator.platform.indexOf('Win') > -1;
+        if (isWindows) {
+          setFullPath(`C:\\Users\\${isWindows ? 'username' : 'user'}\\Documents\\${dirHandle.name}`);
+        } else {
+          setFullPath(`/home/user/${dirHandle.name}`);
+        }
+      } else {
+        setFullPath(`/path/to/${dirHandle.name}`);
       }
+      
+      setShowPathInput(true); // Show path input so user can correct the path if needed
       
       // Try to read package.json if it exists
       try {
@@ -476,6 +486,36 @@ export default function DirectoryTreeGenerator() {
         
         {error && (
           <p className="text-red-400 text-sm mt-2">{error}</p>
+        )}
+        
+        {/* Path input for user to provide full path */}
+        {showPathInput && treeOutput && (
+          <div className="mt-4 p-3 border border-green-800 rounded bg-black/30">
+            <h3 className="text-md font-medium text-green-400 mb-2">System Path</h3>
+            <p className="text-yellow-400 text-sm mb-2">
+              <strong>Browser Security Limitation:</strong> Browsers cannot provide the full system path when you select a directory.
+              We've made our best guess below, but please correct it if it's not accurate:
+            </p>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={fullPath}
+                onChange={(e) => {
+                  setFullPath(e.target.value);
+                  // Update the tree output with the new path
+                  if (rawTree) {
+                    const updatedOutput = generateOutput(e.target.value, rawTree);
+                    setTreeOutput(updatedOutput);
+                  }
+                }}
+                placeholder="C:\Path\To\Your\Directory"
+                className="flex-grow p-2 text-sm bg-black border border-green-700 text-green-300 rounded"
+              />
+            </div>
+            <p className="text-green-600 text-xs italic mt-1">
+              Please enter the complete path (e.g., C:\Users\εφκ\Documents\GitHub\project-folder)
+            </p>
+          </div>
         )}
       </div>
       
